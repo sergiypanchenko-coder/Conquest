@@ -1891,8 +1891,8 @@ const CUTS=[
  {years:'2011 – 2019',op:'OPERATION NEPTUNE SPEAR',reel:'REEL 06',figs:[['binladen','OSAMA BIN LADEN','Founder of al-Qaeda'],['baghdadi','ABU BAKR AL-BAGHDADI','Leader of ISIS']],lines:['BIN LADEN: KILLED AT ABBOTTABAD,','2 MAY 2011.','AL-BAGHDADI: CORNERED AT BARISHA,','OCTOBER 2019.'],footage:['raid','BARISHA, IDLIB // OCT 2019 // US DOD']}];
 const CUTF={boabdil:[.5,.32,1],saladin:[.5,.4,1],suleiman:[.5,.42,1],barbarossa:[.42,.3,1],binladen:[.5,.35,1],baghdadi:[.5,.32,1],f0:[.4,.62,1],f1:[.45,.55,1],f2:[.4,.5,1],f3:[.4,.5,1]};
 /* footage clips: each plays in its own looping video, so cuts never wait on seeking */
-const VIDS={0:['gr0','gr3','gr1','gr4','gr2','gr5','gr6','gr7'],1:['kh5','kh3','kh0','kh4','kh2','kh6','kh1','kh7'],2:['wh0','wh2','wh4','wh3','wh7','wh5','wh9','wh8','wh6','wh10','wh1','wh11'],3:['gl3','gl5','gl0','gl4','gl8','gl2','gl7','gl1','gl9','gl6'],5:['raid0','raid2','raid3','raid4','raid5','raid1']};
-const FEEDS={0:'GRANADA // 1492',1:'JERUSALEM // 1187',2:'VIENNA // 12 SEPTEMBER 1683',3:'LEPANTO // 1571',5:'US DOD // BARISHA'};
+const VIDS={0:['gr0','gr3','gr1','gr4','gr2','gr5','gr6','gr7'],1:['kh5','kh3','kh0','kh4','kh2','kh6','kh1','kh7'],2:['wh0','wh2','wh4','wh3','wh7','wh5','wh9','wh8','wh6','wh10','wh1','wh11'],3:['gl3','gl5','gl0','gl4','gl8','gl2','gl7','gl1','gl9','gl6'],4:['gr3','kh5','wh4','gl5','raid3','kh3','wh7','gl7','gr4','wh2','kh2','gl3','raid5','wh10'],5:['raid0','raid2','raid3','raid4','raid5','raid1']};
+const FEEDS={0:'GRANADA // 1492',1:'JERUSALEM // 1187',2:'VIENNA // 12 SEPTEMBER 1683',3:'LEPANTO // 1571',4:'EVERY ERA // EVERY FRONT',5:'US DOD // BARISHA'};
 const VEL={};function vid(n){if(!VEL[n]){const v=document.createElement('video');v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');v.preload='auto';
   v.src='/img/cut/'+n+(v.canPlayType('video/mp4; codecs="avc1.42E01E"')?'.mp4':'.webm');v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';try{document.body.appendChild(v);}catch(e){}VEL[n]=v;}return VEL[n];}
 function vidsFor(ch){return VIDS[ch]||[];}
@@ -1981,7 +1981,7 @@ function drawCut(dt){const C=G.cut,T=(C.t+=dt),D=CUTS[C.ch],L0=LEVELS[chFirst(C.
     if(s2>4.3){if(!C.stamp){C.stamp=1;cutSfx('stamp');}const k=Math.min(1,(s2-4.3)/.12),sc=2.2-1.2*k;ctx.save();ctx.translate(W*.73,H*.82);ctx.rotate(-.14);ctx.scale(sc,sc);ctx.globalAlpha=.85*k;ctx.strokeStyle='#c41e1e';ctx.lineWidth=3.5;ctx.strokeRect(-104,-22,208,44);mtxt('CLASSIFIED',0,1,30,'#c41e1e','center',1);ctx.restore();}}
   else if(seg===3){/* archive footage */
     const hx=Math.sin(t*1.7)*6+Math.sin(t*4.3)*2,hy=Math.cos(t*1.3)*4,k=D.footage[0];ctx.save();ctx.translate(hx,hy);
-    if(vidsFor(C.ch).length){const vs=vidsFor(C.ch),i=Math.floor(Math.max(0,st-FLASH)/(C.ch===5?1.15:1.5));if(C.ri!==i){C.ri=i;cutSfx('glitch');}vidFrame(vs[(C.clip+i)%vs.length],-12,-12,W+24,H+24);}
+    if(vidsFor(C.ch).length){const vs=vidsFor(C.ch),i=Math.floor(Math.max(0,st-FLASH)/(C.ch===5?1.15:C.ch===4?.9:1.5));if(C.ri!==i){C.ri=i;cutSfx('glitch');}vidFrame(vs[(C.clip+i)%vs.length],-12,-12,W+24,H+24);}
     else if(k==='montage'){const i=Math.floor(st/1.1)%4,fk='f'+i;if(C.mi!==i){C.mi=i;cutSfx('glitch');}cover(cutImg(fk),-12,-12,W+24,H+24,fk,1.1+(st%1.1)*.08);}
     else cover(cutImg(k),-12,-12,W+24,H+24,k,1.08+st*.05);
     ctx.restore();desat(0,0,W,H);ctx.fillStyle='rgba(20,30,20,.18)';ctx.fillRect(0,0,W,H);
@@ -2130,7 +2130,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261119-205734';
+const BUILD='20261119-210532';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
