@@ -1750,10 +1750,10 @@ function popS(p){if(p==null||p>=.4)return 1;const k=p/.4-1;return .55+.45*(1+2.7
 
 /* holy aura: golden glow over the 3x3 tiles each Orthodox Cross protects */
 function crossAura(over){const cr=G.defs.filter(d=>d.type==='monk');if(!cr.length)return;const t=G.t||0;ctx.save();
-  cr.forEach((d,j)=>{const cx=d.x,cy=d.y-CH*.42,R=Math.max(CW,CH)*1.55,pul=.8+.2*Math.sin(t*1.8+j);
-    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,R);const k=over?.35:1;g.addColorStop(0,'rgba(255,244,200,'+(.42*pul*k)+')');g.addColorStop(.45,'rgba(255,218,120,'+(.2*pul*k)+')');g.addColorStop(1,'rgba(255,200,90,0)');
+  cr.forEach((d,j)=>{const cx=d.x,cy=d.y-CH*.5,R=Math.max(CW,CH)*1.9,pul=.85+.15*Math.sin(t*1.5+j);
+    const g=ctx.createRadialGradient(cx,cy,0,cx,cy,R);const k=over?.35:1;g.addColorStop(0,'rgba(255,240,190,'+(.4*pul*k)+')');g.addColorStop(.45,'rgba(255,220,130,'+(.18*pul*k)+')');g.addColorStop(1,'rgba(255,200,90,0)');
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(cx,cy,R,0,PI*2);ctx.fill();
-    if(!over){ctx.fillStyle='#fff3c0';for(let i=0;i<12;i++){const ph=(t*.3+i/12+j*.37)%1,an=i*2.4+j,rr=R*(.25+.55*((i*37)%10)/10);ctx.globalAlpha=Math.sin(ph*PI)*.75;ctx.fillRect(cx+Math.cos(an)*rr-1.5,cy+Math.sin(an)*rr*.7-ph*30-1.5,3,3);}ctx.globalAlpha=1;}});
+  });
   ctx.restore();}
 /* the flag of Georgia, waving: white field, St George's cross, four crosses in the corners */
 let GEOF=null;function geoFlagTex(){if(GEOF)return GEOF;const w=120,h=80,c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.fillStyle='#fbfaf6';g.fillRect(0,0,w,h);g.fillStyle='#e8112d';
@@ -1816,7 +1816,6 @@ function drawGame(){const L=G.L;ctx.save();if(G.shake>0)ctx.translate((Math.rand
       ctx.translate(z.x,rowY(r)+(z.wet?z.age*22:0));ctx.rotate(ang);drawUnit(z.type,0,0,z.t,{flip:z.flip,scale:z.type==='technical'||z.type==='galley'?1:1});ctx.restore();
       if(z.boat&&z.flip&&z.type!=='galley'){ctx.save();ctx.globalAlpha=Math.max(0,1-z.age);ctx.translate(z.x,rowY(r)+z.age*10);ctx.scale(-1,1);drawBoat(z.t,64);ctx.restore();}});
     G.defs.filter(d=>d.row===r).forEach(d=>{const ty=d.type==='quarter'?'financier':d.type;
-      if(d.bless>0&&d.type!=='monk'){const k=Math.min(1,d.bless/.6);ctx.save();ctx.globalAlpha=.55*k;ctx.strokeStyle='#ffd66a';ctx.lineWidth=2.5;ctx.beginPath();ctx.ellipse(d.x,d.y-1,26,7,0,0,PI*2);ctx.stroke();ctx.globalAlpha=.22*k;ctx.fillStyle='#ffe08a';ctx.fill();ctx.restore();}
       if(d.onRaft&&!d.charging)drawUnit('raft',d.x,d.y+4,d.t,{});
       if(d.type==='raft'){drawUnit('raft',d.x,d.y+4,d.t,{flash:d.hit});}
       else drawUnit(ty,d.x-(d.type==='cossack'||d.type==='greekfire'||d.type==='pavise'?8:d.type==='hussar'?14:d.type==='hwacha'||d.type==='ballista'?-6:0),d.y-(d.onRaft&&!d.charging?8:0),d.t,{a:d.a,flash:d.hit,fire:d.fire,walk:d.charging&&d.type==='hussar',scale:popS(d.pop),armed:d.armed,rest:d.rest>0,leap:d.leap&&Math.min(1,d.leap.t/.45)});
@@ -1932,7 +1931,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261119-122157';
+const BUILD='20261119-122258';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
