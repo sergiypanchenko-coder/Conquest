@@ -927,6 +927,7 @@ const FOE={
  turcoman:{name:'Turcoman Horse Archer',hp:280,spd:32,dps:40,off:58,w:90,cav:1,range:330,rate:1.5,dmg:24,proj:'arrow'},
  fatimid:{name:'Fatimid Footman',art:'moor',hp:200,spd:15,dps:45,off:14,w:30},
  ayyubid:{name:'Ayyubid Footman',art:'moor',hp:230,spd:15,dps:50,off:14,w:30},
+ seljukFoot:{name:'Seljuk Footman',art:'moor',hp:200,spd:15,dps:45,off:14,w:30},
  ghulam:{name:'Seljuk Ghulam',art:'moorShield',hp:560,spd:13,dps:45,off:14,w:34},
  ayyubidShield:{name:'Ayyubid Shieldman',art:'moorShield',hp:600,spd:13,dps:50,off:14,w:34},
  ilghazi:{name:'Emir Ilghazi',boss:1,hp:5200,spd:9,dps:420,off:84,w:130,cav:1,scale:1.45,riders:'ghulam',nr:2},
@@ -954,7 +955,7 @@ const LEVELS_=[
  LV(0,'Sagrajas','Yusuf ibn Tashfin\'s Almoravids cross the strait, 1086',[38.9,-6.9],['moor','moorArcher','berber']),
  LV(0,'Las Navas de Tolosa','Alfonso VIII, Sancho VII and Peter II against the Almohads, 1212',[38.28,-3.58],['moor','moorShield','moorArcher','berber','camel']),
  LV(0,'Fall of Granada','Ferdinand and Isabella against Muhammad XII, 1491–1492',[37.18,-3.6],['moor','moorShield','moorArcher','berber','camel']),
- LV(1,'Dorylaeum','Bohemond and Godfrey against Kilij Arslan, 1097',[39.78,30.52],['ghulam','seljukArcher','turcoman']),
+ LV(1,'Dorylaeum','Bohemond and Godfrey against Kilij Arslan, 1097',[39.78,30.52],['seljukFoot','seljukArcher','ghulam','turcoman']),
  LV(1,'Ascalon','Godfrey of Bouillon against the vizier al-Afdal, 1099',[31.67,34.57],['fatimid','berber','camel']),
  LV(1,'Didgori','David IV the Builder of Georgia against Ilghazi, 1121',[41.76,44.53],['ghulam','seljukArcher','turcoman'],{boss:'ilghazi'}),
  LV(1,'Montgisard','Baldwin IV, the leper king, surprises Saladin, 1177',[31.9,34.87],['ayyubid','ayyubidShield','turcoman','mamluk']),
@@ -1784,7 +1785,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261119-110640';
+const BUILD='20261119-112957';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
