@@ -834,7 +834,19 @@ function setTrack(name){const a=AU.c;if(!a||MU.track===name)return;MU.track=name
 function sting(win){const a=muInit();if(!a)return;const t=a.currentTime+.05;MU.gain.gain.cancelScheduledValues(t);MU.gain.gain.setValueAtTime(.45,t);
   if(win){[0,2,4,7,9,11,14].forEach((d,i)=>pluck(t+i*.11,deg(d,0),.1,1.2));ney(t+.8,deg(14,0),.14,1.8,1);doum(t,.4);doum(t+.8,.4);}
   else{[7,5,4,1,0].forEach((d,i)=>ney(t+i*.42,deg(d,0),.11,.5,1));doum(t,.35);doum(t+1.7,.45);}}
-function musicFrame(){if(!AU.c)return;const want=(!MUSIC||!SOUND)?null:G.state==='menu'?'menu':(G.state==='play'||G.state==='prep')?'battle':null;
+/* recorded soundtracks for particular battles (they replace the generated music there) */
+const SONGS={Didgori:'/audio/didgori-lashkruli.mp3'};
+const SONG={a:null,src:null,vol:0,run:null};
+function songFor(){return G.L&&SONGS[G.L.name]&&(G.state==='play'||G.state==='prep')?SONGS[G.L.name]:null;}
+function songFrame(src){const on=!!src&&MUSIC&&SOUND,boss=on&&G.state==='play'&&G.foes&&G.foes.some(e=>FOE[e.type].boss);
+  if(on&&(!SONG.a||SONG.src!==src)){if(SONG.a)SONG.a.pause();SONG.a=new Audio(src);SONG.a.loop=true;SONG.a.preload='auto';SONG.src=src;SONG.vol=0;SONG.a.volume=0;}
+  if(!SONG.a)return;const a=SONG.a;
+  if(on&&SONG.run!==G){SONG.run=G;try{a.currentTime=0;}catch(e){}}
+  const target=on?(G.paused?.25:boss?.95:.8):0;SONG.vol+=(target-SONG.vol)*(target>SONG.vol?.03:.06);if(Math.abs(target-SONG.vol)<.005)SONG.vol=target;
+  try{a.volume=Math.max(0,Math.min(1,SONG.vol));}catch(e){}
+  if(target>0&&a.paused){const p=a.play();if(p&&p.catch)p.catch(()=>{});}
+  else if(target===0&&SONG.vol===0&&!a.paused)a.pause();}
+function musicFrame(){if(!AU.c)return;const song=songFor();songFrame(song);const want=(!MUSIC||!SOUND||song)?null:G.state==='menu'?'menu':(G.state==='play'||G.state==='prep')?'battle':null;
   if(G.state==='win'||G.state==='lose'){if(MU.sting!==G.state){MU.sting=G.state;setTrack(null);if(MUSIC&&SOUND)sting(G.state==='win');}}else MU.sting=null;
   setTrack(want);if(!MU.track)return;
   {const boss=G.state==='play'&&G.foes&&G.foes.some(e=>FOE[e.type].boss||e.type==='binladen'||e.type==='baghdadi');if(boss&&!MU.boss){MU.boss=1;newPiece(musicStyle());if(MU.dg)MU.dg.gain.setTargetAtTime(.11,AU.c.currentTime,.5);}else if(!boss&&MU.boss){MU.boss=0;newPiece(musicStyle());if(MU.dg)MU.dg.gain.setTargetAtTime(.05,AU.c.currentTime,1);}
