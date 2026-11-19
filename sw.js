@@ -1,7 +1,7 @@
 /* Conquest offline cache: the game and site work without a connection after the first visit.
    Pages: network first with a short timeout, then the cached copy (never a blank screen).
    Images, icons, fonts: cache first. Supabase, music and version checks are never cached. */
-const V='conquest-v9';
+const V='conquest-v10';
 const CORE=['/','/play','/favicon.svg','/manifest.webmanifest','/icons/icon-192.png','/icons/icon-512.png'];
 /* Android refuses to show a page if the service worker hands it a "redirected" response, so store clean copies */
 const clean=res=>res.redirected?res.blob().then(b=>new Response(b,{status:res.status,statusText:res.statusText,headers:res.headers})):Promise.resolve(res);
@@ -16,7 +16,7 @@ function page(r,u){const key=u.pathname.startsWith('/play')?'/play':(u.pathname=
     net.then(res=>{if(!done){done=true;clearTimeout(t);ok(res);}}).catch(()=>cached().then(m=>{if(!done){done=true;clearTimeout(t);ok(m||Response.error());}}));});}
 self.addEventListener('fetch',e=>{const r=e.request;if(r.method!=='GET')return;const u=new URL(r.url);
   if(u.hostname.endsWith('supabase.co'))return;
-  if(u.pathname.endsWith('.mp3')||u.pathname==='/version.json'||u.pathname==='/sw.js')return;
+  if(/\.(mp3|mp4|webm)$/.test(u.pathname)||u.pathname==='/version.json'||u.pathname==='/sw.js')return;
   const font=u.hostname==='fonts.googleapis.com'||u.hostname==='fonts.gstatic.com';
   if(u.origin!==location.origin&&!font)return;
   if(r.mode==='navigate'){e.respondWith(page(r,u));return;}
