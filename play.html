@@ -1343,7 +1343,7 @@ function drawMenu(){if(!MAPC){MAPC=buildMap();}ctx.drawImage(MAPC,0,0,W,H);const
     if(!lock)G.btns.push({x:x-r-5,y:y-r-5,w:2*r+10,h:2*r+10,fn:()=>{menuSel=i;sfx('tap',0);}});});
   {const[x,y]=NODES[cur],bob=Math.sin(t*3)*2;line(x,y-13,x,y-44+bob,2,'#4a1a04');ctx.beginPath();ctx.moveTo(x,y-44+bob);ctx.quadraticCurveTo(x+12,y-46+bob+Math.sin(t*6)*2,x+22,y-40+bob);ctx.quadraticCurveTo(x+12,y-36+bob,x,y-32+bob);ctx.closePath();ctx.fillStyle='#c4381a';ctx.fill();ctx.strokeStyle='#6a1a08';ctx.lineWidth=1;ctx.stroke();}
   brass(14,10,262,60,8);etxt('CONQUEST',145,34,34,TF,'center','#4a1a06');etxt('Defenders of the Ages',145,57,13,BF,'center','#6a2a0a');
-  btn(W-362,12,112,36,'Home',()=>{location.href='/';},{size:13});btn(W-244,12,112,36,SOUND?'Sound: on':'Sound: off',toggleSound,{size:13});btn(W-126,12,112,36,MUSIC?'Music: on':'Music: off',toggleMusic,{size:13});btn(W-362,54,348,34,'Hall of Commanders',()=>{G.hall=true;loadOnline();},{size:15});
+  btn(W-362,12,112,36,'Home',()=>{location.href='/';},{size:13});btn(W-244,12,112,36,SOUND?'Sound: on':'Sound: off',toggleSound,{size:13});btn(W-126,12,112,36,MUSIC?'Music: on':'Music: off',toggleMusic,{size:13});btn(W-362,54,230,34,'Hall of Commanders',()=>{G.hall=true;loadOnline();},{size:15});btn(W-126,54,112,34,BK.state==='ok'?'Backup ✓':BK.state==='saving'?'Backup…':'Backup',()=>{G.bk=true;doBackup();},{size:14});
   const L=LEVELS[menuSel],C=CHAPTERS[L.ch],cx=14,cw=250,chh=190,cy=H-chh-14;
   ctx.save();ctx.shadowColor='rgba(60,25,6,.55)';ctx.shadowBlur=14;ctx.shadowOffsetY=5;ctx.fillStyle='#e8c690';ctx.fillRect(cx,cy,cw,chh);ctx.restore();paper(cx,cy,cw,chh,4);ctx.strokeStyle='#7a3410';ctx.lineWidth=2;ctx.strokeRect(cx,cy,cw,chh);
   etxt(C.name.toUpperCase()+' · BATTLE '+(menuSel+1)+' OF '+N,cx+cw/2,cy+17,11,BF,'center','#9a3e12');
@@ -1428,11 +1428,11 @@ let BEST={};try{BEST=JSON.parse(localStorage.getItem('conquest_best')||'{}')||{}
 const ONLINE={stats:null,top:null,rank:null,loadedAt:-99};
 function totals(){const ks=Object.keys(BEST).filter(k=>LEVELS[+k]);return{won:ks.length,stars:ks.reduce((a,k)=>a+stars(+k),0),bosses:ks.filter(k=>LEVELS[+k].boss).length,score:ks.reduce((a,k)=>a+(BEST[k]|0),0)};}
 function battleScore(){return stars(G.li)*100+G.cannons.filter(c=>c.s==='ready').length*40+(G.L.boss?300:0);}
-function onBattleEnd(win){rpc('conquest_battle_result',{p_level:G.li,p_win:!!win});if(!win)return;G.score=battleScore();if(!(BEST[G.li]>=G.score)){BEST[G.li]=G.score;try{localStorage.setItem('conquest_best',JSON.stringify(BEST));}catch(e){}}submitScore();}
+function onBattleEnd(win){rpc('conquest_battle_result',{p_level:G.li,p_win:!!win});if(!win)return;setTimeout(backup,0);G.score=battleScore();if(!(BEST[G.li]>=G.score)){BEST[G.li]=G.score;try{localStorage.setItem('conquest_best',JSON.stringify(BEST));}catch(e){}}submitScore();}
 function submitScore(){if(!ME.name)return Promise.resolve();const T=totals();return rpc('conquest_submit',{p_id:ME.id,p_secret:ME.sec,p_name:ME.name,p_won:T.won,p_stars:T.stars,p_bosses:T.bosses,p_score:T.score}).then(r=>{if(typeof r==='number')ONLINE.rank=r;});}
 function loadOnline(){ONLINE.loadedAt=G.t||0;rpc('conquest_battle_stats').then(r=>{if(Array.isArray(r)){ONLINE.stats={};r.forEach(x=>ONLINE.stats[x.level]=x);}});rpc('conquest_top',{p_limit:10}).then(r=>{if(Array.isArray(r)){ONLINE.top=r;ONLINE.off=0;}else ONLINE.off=1;});}
 function setName(){const n=window.prompt('Your commander name for the Hall of Commanders (2 to 20 letters):',ME.name||'');if(n==null)return;const c=n.replace(/[^\p{L}\p{N} _.'-]/gu,'').trim().slice(0,20);if(c.length<2)return;
-  ME.name=c;try{localStorage.setItem('conquest_name',c);}catch(e){}submitScore().then(()=>loadOnline());}
+  ME.name=c;try{localStorage.setItem('conquest_name',c);}catch(e){}backup();submitScore().then(()=>loadOnline());}
 function winRate(i){const s=ONLINE.stats&&ONLINE.stats[i];if(!s)return'';const n=s.wins+s.losses;return n?Math.round(100*s.wins/n)+'% of commanders win this':'';}
 function drawHall(){ctx.fillStyle='rgba(110,45,10,.45)';ctx.fillRect(0,0,W,H);panel(210,70,540,470,'Hall of Commanders');const T=totals(),x=250,top=ONLINE.top;
   etxt(ME.name?'You: '+ME.name+(ONLINE.rank?' · rank #'+ONLINE.rank:''):'Choose a name to join the Hall',W/2,152,15,BF,'center','#9a3e12');
@@ -1441,6 +1441,44 @@ function drawHall(){ctx.fillStyle='rgba(110,45,10,.45)';ctx.fillRect(0,0,W,H);pa
   else top.forEach((r,i)=>{const y=204+i*25,me=ME.name&&r.name===ME.name;if(me){ctx.fillStyle='rgba(240,150,60,.25)';ctx.fillRect(x-10,y-11,460,22);}
     etxt('#'+r.rank,x+14,y,14,TF,'center',i<3?'#a8220e':'#6a2a0a');etxt(r.name,x+44,y,14,BF,'left','#4a1a06');etxt(r.battles_won+' won',x+290,y,13,BF,'right','#6a2a0a');etxt(r.bosses+' bosses',x+370,y,13,BF,'right','#6a2a0a');etxt(String(r.score),x+448,y,14,TF,'right','#4a1a06');});
   btn(250,470,210,46,ME.name?'Change name':'Choose a name',setName,{size:16});btn(500,470,210,46,'Close',()=>{G.hall=false;},{size:16});}
+/* ---------- automatic cloud backup with a commander code ---------- */
+const B32='0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+function newCode(){const a=new Uint8Array(12);try{crypto.getRandomValues(a);}catch(e){for(let i=0;i<12;i++)a[i]=Math.random()*256|0;}let s='';for(let i=0;i<12;i++)s+=B32[a[i]&31];return'CQ-'+s.slice(0,4)+'-'+s.slice(4,8)+'-'+s.slice(8);}
+function normCode(c){const s=String(c||'').toUpperCase().replace(/[^0-9A-Z]/g,'').replace(/^CQ/,'');return s.length===12?'CQ-'+s.slice(0,4)+'-'+s.slice(4,8)+'-'+s.slice(8):null;}
+let CODE=null;try{CODE=normCode(localStorage.getItem('conquest_code'));}catch(e){}
+if(!CODE){CODE=newCode();try{localStorage.setItem('conquest_code',CODE);}catch(e){}}
+const BK={state:'idle',at:0,t:null};try{BK.at=+localStorage.getItem('conquest_bk_at')||0;}catch(e){}
+function snapshot(){return{v:1,unlocked,best:BEST,name:ME.name||'',hid:ME.id,hsec:ME.sec};}
+function applyRemote(d,adopt){if(!d||typeof d!=='object')return;
+  const u=Math.min(LEVELS.length,d.unlocked|0);if(u>unlocked){unlocked=u;try{localStorage.setItem('siegelines_u2',unlocked);}catch(e){}}
+  if(d.best&&typeof d.best==='object')for(const k in d.best){const v=d.best[k]|0;if(LEVELS[+k]&&!(BEST[k]>=v))BEST[k]=v;}try{localStorage.setItem('conquest_best',JSON.stringify(BEST));}catch(e){}
+  if(adopt&&d.hid&&d.hsec&&d.hid!==ME.id){ME.id=d.hid;ME.sec=d.hsec;try{localStorage.setItem('conquest_id',ME.id);localStorage.setItem('conquest_secret',ME.sec);}catch(e){}}
+  if((adopt||!ME.name)&&d.name){ME.name=d.name;try{localStorage.setItem('conquest_name',ME.name);}catch(e){}}}
+function doBackup(keep){clearTimeout(BK.t);BK.state='saving';
+  return fetch(SB.url+'/rest/v1/rpc/conquest_backup',{method:'POST',keepalive:!!keep,headers:{apikey:SB.key,'Content-Type':'application/json'},body:JSON.stringify({p_code:CODE,p_data:snapshot()})})
+   .then(r=>r.ok?r.json():null).catch(()=>null).then(r=>{if(r&&typeof r==='object'){applyRemote(r,false);BK.state='ok';BK.at=Date.now();try{localStorage.setItem('conquest_bk_at',BK.at);}catch(e){}}else BK.state='off';return r;});}
+function backup(){clearTimeout(BK.t);BK.t=setTimeout(()=>doBackup(),1200);}
+setTimeout(()=>doBackup(),1500);
+setInterval(()=>{if(BK.state==='off')doBackup();},60000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')doBackup(true);});
+function restoreCode(){const c=normCode(window.prompt('Enter your commander code (it looks like CQ-XXXX-XXXX-XXXX):',''));if(!c){if(c===null)return;window.alert('That does not look like a commander code.');return;}
+  if(c===CODE){window.alert('That is already the code of this device.');return;}
+  rpc('conquest_restore',{p_code:c}).then(d=>{if(!d){window.alert('No backup was found for '+c+'. Check the code and your connection.');return;}
+    applyRemote(d,true);CODE=c;try{localStorage.setItem('conquest_code',CODE);}catch(e){}
+    doBackup().then(()=>{const n=Object.keys(BEST).length;G.floats.push({x:W/2,y:H/2,s:'Progress restored',t:2});window.alert('Welcome back'+(ME.name?', '+ME.name:'')+'! '+n+(n===1?' battle':' battles')+' won, '+Math.max(0,unlocked-1)+' unlocked. This device now uses your code.');menuSel=null;loadOnline();});});}
+function ago(t){if(!t)return'not yet';const s=Math.round((Date.now()-t)/1000);return s<60?'just now':s<3600?Math.round(s/60)+' min ago':s<86400?Math.round(s/3600)+' h ago':Math.round(s/86400)+' days ago';}
+function drawBackup(){ctx.fillStyle='rgba(110,45,10,.45)';ctx.fillRect(0,0,W,H);panel(230,80,500,450,'Cloud backup');
+  const st=BK.state==='saving'?'Backing up…':BK.state==='off'?'Offline: will back up when you are connected':'Backed up '+ago(BK.at)+' ✓';
+  etxt(st,W/2,154,16,BF,'center',BK.state==='off'?'#a8220e':'#2e6a2a');
+  etxt('Your progress is saved online automatically after every battle.',W/2,186,14,BF,'center','#6a2a0a');
+  etxt('Your commander code',W/2,226,15,BF,'center','#9a3e12');
+  ctx.fillStyle='rgba(255,246,224,.85)';rpath(W/2-170,240,340,56,8);ctx.fill();ctx.strokeStyle='#7a3410';ctx.lineWidth=1.5;rpath(W/2-170,240,340,56,8);ctx.stroke();
+  etxt(CODE,W/2,269,30,TF,'center','#4a1a06');
+  etxt('Keep it somewhere safe. Enter it on another phone, computer',W/2,322,14,BF,'center','#6a2a0a');
+  etxt('or browser to continue with all your battles and scores.',W/2,342,14,BF,'center','#6a2a0a');
+  btn(262,372,210,46,'Copy code',()=>{const done=()=>G.floats.push({x:367,y:432,s:'Copied',t:1});try{navigator.clipboard.writeText(CODE).then(done,()=>window.prompt('Copy your code:',CODE));}catch(e){window.prompt('Copy your code:',CODE);}},{size:16});
+  btn(488,372,210,46,'Use another code',restoreCode,{size:16});
+  btn(375,440,210,46,'Close',()=>{G.bk=false;},{size:16});}
 let FIN_T=-1;
 function updatePrep(dt){G.pt+=dt;if(G.L.final&&G.phase==='scout'&&FIN_T>=0&&FIN_T<9){FIN_T+=dt;G.pt=0;}if(G.phase==='scout'&&G.pt>2.2){G.phase='pick';G.pt=0;}
   if(G.phase==='count'&&G.pt>2.6){G.state='play';G.banner=null;G.cd={};ORDER.forEach(k=>G.cd[k]=0);Object.assign(G.cd,START_CD);}}
@@ -1449,7 +1487,7 @@ function updatePrep(dt){G.pt+=dt;if(G.L.final&&G.phase==='scout'&&FIN_T>=0&&FIN_
 let last=performance.now();
 function frame(now){try{musicFrame();}catch(e){}let dt=Math.max(0,Math.min(0.05,(now-last)/1000));last=now;G.t=(G.t||0)+dt;G.btns=[];
   ctx.clearRect(0,0,W,H);
-  if(G.state==='menu'){if((G.t||0)-ONLINE.loadedAt>30||G.justBack){G.justBack=0;loadOnline();}drawMenu();atmos(.8);if(G.hall){G.btns=[];drawHall();}}
+  if(G.state==='menu'){if((G.t||0)-ONLINE.loadedAt>30||G.justBack){G.justBack=0;loadOnline();}drawMenu();atmos(.8);if(G.hall){G.btns=[];drawHall();}else if(G.bk){G.btns=[];drawBackup();}}
   else if(G.state==='prep'){updatePrep(dt);drawPrep();atmos(.7);if(G.L.final&&FIN_T>=0&&FIN_T<9)finaleCard();if(G.phase==='scout')G.btns=[{x:0,y:0,w:W,h:H,fn:()=>{if(G.L.final&&FIN_T>=0&&FIN_T<9){FIN_T=9;return;}G.phase='pick';G.pt=0;}}];}
   else{if(G.state==='play'&&!G.paused){for(let i=0;i<G.speed;i++)update(dt);}
     drawGame();if(!(G.L&&G.L.night))atmos(.55);G.btns=G.state==='play'&&!G.paused?G.btns:[];

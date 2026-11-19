@@ -28,3 +28,14 @@ alter table public.conquest_battles enable row level security;
 -- the hashed secret; later calls must present the same secret. Scores only ever go up.
 -- conquest_top(limit), conquest_battle_result(level, win), conquest_battle_stats(), conquest_count()
 -- See the migration "conquest_game_tables" in the Supabase dashboard for the full function bodies.
+
+-- Cloud saves (automatic backup + commander code).
+create table public.conquest_saves (
+  code_hash text primary key,                -- sha256 of the commander code; the code itself is never stored
+  data jsonb not null check (pg_column_size(data) < 16000),
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+alter table public.conquest_saves enable row level security;
+-- conquest_backup(code, data): merges and never goes backwards (highest unlocked, best score per battle).
+-- conquest_restore(code): returns the save for that code, or null.
