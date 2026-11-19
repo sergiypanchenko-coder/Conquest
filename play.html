@@ -1883,7 +1883,7 @@ function drawLeafs(){const t=G.t||0;
 
 /* ================= ERA BRIEFINGS: VHS intel-dossier cutscenes between eras ================= */
 const CUTS=[
- {years:'711 – 1492',op:'OPERATION PELAGIUS',reel:'REEL 01',figs:[['boabdil','MUHAMMAD XII','Emir of Granada · "Boabdil"']],lines:['LAST MUSLIM RULER IN IBERIA.','HELD GRANADA FOR TEN YEARS OF WAR.','SURRENDERED, 2 JANUARY 1492.'],footage:['f0','LAS NAVAS DE TOLOSA // 1212']},
+ {years:'711 – 1492',op:'OPERATION PELAGIUS',reel:'REEL 01',figs:[['boabdil','MUHAMMAD XII','Emir of Granada · "Boabdil"']],lines:['LAST MUSLIM RULER IN IBERIA.','HELD GRANADA FOR TEN YEARS OF WAR.','SURRENDERED, 2 JANUARY 1492.'],footage:['f0','GRANADA // 2 JANUARY 1492']},
  {years:'1097 – 1191',op:'OPERATION JERUSALEM',reel:'REEL 02',figs:[['saladin','SALADIN','Sultan of Egypt and Syria · 1137 – 1193']],lines:['DESTROYED THE CRUSADER ARMY','AT HATTIN, 4 JULY 1187.','RETOOK JERUSALEM THAT OCTOBER.'],footage:['f1','JERUSALEM // 15 JULY 1099']},
  {years:'1526 – 1683',op:'OPERATION BASTION',reel:'REEL 03',figs:[['suleiman','SULEIMAN I','Ottoman sultan · "the Magnificent"']],lines:['BROKE HUNGARY AT MOHÁCS, 1526.','LAID SIEGE TO VIENNA, 1529.','RULED ON THREE CONTINENTS.'],footage:['f2','VIENNA // THE OTTOMAN SIEGE CAMP']},
  {years:'1522 – 1571',op:'OPERATION LEPANTO',reel:'REEL 04',figs:[['barbarossa','HAYREDDIN BARBAROSSA','Grand admiral of the Ottoman fleet']],lines:['CORSAIR TURNED GRAND ADMIRAL.','WON AT PREVEZA, 1538.','MASTER OF THE MEDITERRANEAN.'],footage:['f3','LEPANTO // 7 OCTOBER 1571']},
@@ -1891,7 +1891,8 @@ const CUTS=[
  {years:'2011 – 2019',op:'OPERATION NEPTUNE SPEAR',reel:'REEL 06',figs:[['binladen','OSAMA BIN LADEN','Founder of al-Qaeda'],['baghdadi','ABU BAKR AL-BAGHDADI','Leader of ISIS']],lines:['BIN LADEN: KILLED AT ABBOTTABAD,','2 MAY 2011.','AL-BAGHDADI: CORNERED AT BARISHA,','OCTOBER 2019.'],footage:['raid','BARISHA, IDLIB // OCT 2019 // US DOD']}];
 const CUTF={boabdil:[.5,.32,1],saladin:[.5,.4,1],suleiman:[.5,.42,1],barbarossa:[.42,.3,1],binladen:[.5,.35,1],baghdadi:[.5,.32,1],f0:[.4,.62,1],f1:[.45,.55,1],f2:[.4,.5,1],f3:[.4,.5,1]};
 /* footage clips: each plays in its own looping video, so cuts never wait on seeking */
-const VIDS={5:['raid0','raid2','raid3','raid4','raid5','raid1']};
+const VIDS={0:['gr0','gr3','gr1','gr4','gr2','gr5','gr6','gr7'],5:['raid0','raid2','raid3','raid4','raid5','raid1']};
+const FEEDS={0:'GRANADA // 1492',5:'US DOD // BARISHA'};
 const VEL={};function vid(n){if(!VEL[n]){const v=document.createElement('video');v.muted=true;v.loop=true;v.playsInline=true;v.setAttribute('playsinline','');v.setAttribute('muted','');v.preload='auto';
   v.src='/img/cut/'+n+(v.canPlayType('video/mp4; codecs="avc1.42E01E"')?'.mp4':'.webm');v.style.cssText='position:fixed;left:0;top:0;width:2px;height:2px;opacity:0;pointer-events:none';try{document.body.appendChild(v);}catch(e){}VEL[n]=v;}return VEL[n];}
 function vidsFor(ch){return VIDS[ch]||[];}
@@ -1948,7 +1949,7 @@ function drawCut(dt){const C=G.cut,T=(C.t+=dt),D=CUTS[C.ch],L0=LEVELS[chFirst(C.
   if(seg!==C.seg){C.seg=seg;if(seg>0){cutSfx('hit');cutSfx('tape');if(seg===1||seg===3)cutSfx('drone');C.clip++;}}
   const st=T-CUT_SEG[seg],flash=seg>0&&st<FLASH,jit=st<.15?(Math.random()-.5)*14:0;
   ctx.save();ctx.fillStyle='#050505';ctx.fillRect(0,0,W,H);ctx.translate(jit,jit*.4);
-  if(flash){/* a burst of the era's own footage at every cut */feed(D,C.ch,C.clip,-10,-10,W+20,H+20,T);desat(0,0,W,H);ctx.fillStyle='rgba(30,40,30,.25)';ctx.fillRect(0,0,W,H);mtxt(vidsFor(C.ch).length?'FEED // US DOD // BARISHA':'ARCHIVE // '+D.footage[1],36,H-40,14,'#f2f2ee',null,1);}
+  if(flash){/* a burst of the era's own footage at every cut */feed(D,C.ch,C.clip,-10,-10,W+20,H+20,T);desat(0,0,W,H);ctx.fillStyle='rgba(30,40,30,.25)';ctx.fillRect(0,0,W,H);mtxt(FEEDS[C.ch]?'FEED // '+FEEDS[C.ch]:'ARCHIVE // '+D.footage[1],36,H-40,14,'#f2f2ee',null,1);}
   else if(seg===0){const k=Math.min(1,T/.7);ctx.fillStyle='#e8f4ff';ctx.globalAlpha=1-Math.max(0,(T-.7)/.3);const hh=Math.max(1.5,H*Math.pow(k,4)*.5);ctx.fillRect(W/2-W*.5*Math.min(1,k*2),H/2-hh/2,W*Math.min(1,k*2),hh);ctx.globalAlpha=1;
     if(T>.3)mtxt(typed(D.reel+'  //  '+CH.name.toUpperCase(),.3,40,T),40,H-40,16,'rgba(230,240,255,.8)');}
   else if(seg===1){/* the map, zooming along the route, with a live feed */
@@ -1980,7 +1981,7 @@ function drawCut(dt){const C=G.cut,T=(C.t+=dt),D=CUTS[C.ch],L0=LEVELS[chFirst(C.
     if(s2>4.3){if(!C.stamp){C.stamp=1;cutSfx('stamp');}const k=Math.min(1,(s2-4.3)/.12),sc=2.2-1.2*k;ctx.save();ctx.translate(W*.73,H*.82);ctx.rotate(-.14);ctx.scale(sc,sc);ctx.globalAlpha=.85*k;ctx.strokeStyle='#c41e1e';ctx.lineWidth=3.5;ctx.strokeRect(-104,-22,208,44);mtxt('CLASSIFIED',0,1,30,'#c41e1e','center',1);ctx.restore();}}
   else if(seg===3){/* archive footage */
     const hx=Math.sin(t*1.7)*6+Math.sin(t*4.3)*2,hy=Math.cos(t*1.3)*4,k=D.footage[0];ctx.save();ctx.translate(hx,hy);
-    if(k==='raid'){const vs=vidsFor(C.ch),i=Math.floor(Math.max(0,st-FLASH)/1.15);if(C.ri!==i){C.ri=i;cutSfx('glitch');}vidFrame(vs[(C.clip+i)%vs.length],-12,-12,W+24,H+24);}
+    if(vidsFor(C.ch).length){const vs=vidsFor(C.ch),i=Math.floor(Math.max(0,st-FLASH)/(C.ch===5?1.15:1.5));if(C.ri!==i){C.ri=i;cutSfx('glitch');}vidFrame(vs[(C.clip+i)%vs.length],-12,-12,W+24,H+24);}
     else if(k==='montage'){const i=Math.floor(st/1.1)%4,fk='f'+i;if(C.mi!==i){C.mi=i;cutSfx('glitch');}cover(cutImg(fk),-12,-12,W+24,H+24,fk,1.1+(st%1.1)*.08);}
     else cover(cutImg(k),-12,-12,W+24,H+24,k,1.08+st*.05);
     ctx.restore();desat(0,0,W,H);ctx.fillStyle='rgba(20,30,20,.18)';ctx.fillRect(0,0,W,H);
@@ -2129,7 +2130,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261119-195103';
+const BUILD='20261119-200249';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
