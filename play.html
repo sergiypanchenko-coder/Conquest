@@ -1815,14 +1815,17 @@ function leafShape(g,x,y,s,rot){g.save();g.translate(x,y);g.rotate(rot||0);g.sca
     for(let i=1;i<=n;i++){const u=i/n,w=Math.sin(u*PI)*.19*L*(1-u*.3);g.lineTo(w*(i%2?1.25:.9),-u*L);}
     for(let i=n;i>=1;i--){const u=i/n,w=Math.sin(u*PI)*.19*L*(1-u*.3);g.lineTo(-w*(i%2?1.25:.9),-u*L);}g.closePath();g.restore();};
   for(const[a,k]of lf)one(a,22*k);g.restore();}
-function drawLeaf(g,x,y,s,rot,glowA){g.save();if(glowA){const gr=g.createRadialGradient(x,y-8*s,2,x,y-8*s,36*s);gr.addColorStop(0,'rgba(170,255,120,'+glowA+')');gr.addColorStop(1,'rgba(120,255,80,0)');g.fillStyle=gr;g.fillRect(x-40*s,y-48*s,80*s,80*s);}
-  g.strokeStyle='#1e4a12';g.lineWidth=2.4*s;g.beginPath();g.moveTo(x,y);g.lineTo(x+1*s,y+9*s);g.stroke();
-  const lf=[[0,1],[-.42,.86],[.42,.86],[-.92,.6],[.92,.6],[-1.32,.3],[1.32,.3]];
-  for(const[a,k]of lf){g.save();g.translate(x,y);g.rotate((rot||0)+a);g.scale(s,s);const L=22*k,n=7;g.beginPath();g.moveTo(0,0);
-    for(let i=1;i<=n;i++){const u=i/n,w=Math.sin(u*PI)*.19*L*(1-u*.3);g.lineTo(w*(i%2?1.25:.9),-u*L);}
-    for(let i=n;i>=1;i--){const u=i/n,w=Math.sin(u*PI)*.19*L*(1-u*.3);g.lineTo(-w*(i%2?1.25:.9),-u*L);}g.closePath();
-    const gr=g.createLinearGradient(0,0,0,-L);gr.addColorStop(0,'#2e7a1e');gr.addColorStop(.6,'#58b030');gr.addColorStop(1,'#8ed04a');g.fillStyle=gr;g.fill();g.strokeStyle='#173a0c';g.lineWidth=1.2;g.stroke();
-    g.strokeStyle='rgba(220,255,170,.65)';g.lineWidth=.8;g.beginPath();g.moveTo(0,-1);g.lineTo(0,-L*.88);g.stroke();g.restore();}
+const LEAFP=[[.025,-.1],[.1,-.2],[.07,-.25],[.21,-.36],[.14,-.41],[.27,-.53],[.17,-.57],[.23,-.69],[.12,-.72],[.14,-.84],[.05,-.86],[0,-1]];
+function drawLeaf(g,x,y,s,rot,glowA){g.save();if(glowA){const gr=g.createRadialGradient(x,y-10*s,2,x,y-10*s,40*s);gr.addColorStop(0,'rgba(140,255,110,'+glowA+')');gr.addColorStop(1,'rgba(120,255,80,0)');g.fillStyle=gr;g.fillRect(x-44*s,y-54*s,88*s,88*s);}
+  g.translate(x,y);g.rotate(rot||0);g.scale(s,s);g.lineJoin='round';g.lineCap='round';
+  const lf=[[0,35,1.15],[-.98,30,1.2],[.98,30,1.2],[-1.95,19,1.25],[1.95,19,1.25]];
+  const path=()=>{g.beginPath();lf.forEach(([a,L,wd])=>{const c=Math.cos(a),sn=Math.sin(a),P=(px,py)=>[px*wd*L*c-py*L*sn,px*wd*L*sn+py*L*c];
+    g.moveTo(0,0);LEAFP.forEach(([px,py])=>{const q=P(px,py);g.lineTo(q[0],q[1]);});for(let i=LEAFP.length-2;i>=0;i--){const q=P(-LEAFP[i][0],LEAFP[i][1]);g.lineTo(q[0],q[1]);}g.closePath();});};
+  const stem=()=>{g.beginPath();g.moveTo(0,-2);g.quadraticCurveTo(.5,12,-5,21);};
+  stem();g.strokeStyle='#111';g.lineWidth=8.5;g.stroke();
+  path();g.strokeStyle='#111';g.lineWidth=3.4;g.stroke();
+  stem();g.strokeStyle='#3cb54a';g.lineWidth=4.6;g.stroke();
+  path();g.fillStyle='#3cb54a';g.fill();g.beginPath();g.arc(0,-1,4.6,0,PI*2);g.fill();
   g.restore();}
 const RALLY={
  archer:['Arrow Storm',d=>{for(let r=0;r<ROWS;r++)for(let i=0;i<14;i++)later(i*.07+r*.03,()=>G.projs.push({bl:BLESS,x:d.x+24,y:rowY(r)-40,row:r,v:640,dmg:A(58),k:'arrow',pierce:new Set()}));}],
@@ -2001,7 +2004,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261119-151902';
+const BUILD='20261119-175818';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
