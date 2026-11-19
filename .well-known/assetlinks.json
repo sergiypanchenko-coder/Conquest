@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "com.conquestgame.app",
+    "sha256_cert_fingerprints": ["CF:ED:6A:39:E2:4F:C9:33:19:4D:78:EE:20:F0:D3:23:28:66:43:A2:1D:AE:E1:9D:49:0F:A9:1B:20:80:1E:CD"]
+  }
+}]
