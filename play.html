@@ -4,6 +4,13 @@
 <title>Conquest · Play</title>
 <meta name="description" content="Conquest: hold the line across thirteen centuries, from Covadonga in 722 to Barisha in 2019.">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Conquest">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <meta name="theme-color" content="#c98a4b">
 <link href="https://fonts.googleapis.com/css2?family=Rakkas&family=El+Messiri:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -1465,4 +1472,6 @@ cv.addEventListener('pointerdown',ev=>{ev.preventDefault();if(SOUND){auInit();if
     if(G.gold>=D.cost&&G.cd[G.sel]<=0)place(G.sel,rw,c);G.sel=null;}
 },{passive:false});
 }
-</script></body></html>
+</script>
+<script>if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});</script>
+</body></html>

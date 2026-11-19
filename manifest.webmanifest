@@ -1,0 +1,23 @@
+{
+  "name": "Conquest",
+  "short_name": "Conquest",
+  "description": "Hold the line across thirteen centuries. 34 real battles, 25 soldiers, 5 bosses.",
+  "id": "/play",
+  "start_url": "/play?source=app",
+  "scope": "/",
+  "display": "fullscreen",
+  "display_override": ["fullscreen", "standalone"],
+  "orientation": "landscape",
+  "background_color": "#c98a4b",
+  "theme_color": "#c98a4b",
+  "categories": ["games", "education"],
+  "icons": [
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "screenshots": [
+    { "src": "/img/shot-battle.jpg", "sizes": "1920x1200", "type": "image/jpeg", "form_factor": "wide", "label": "A battle at the Horns of Hattin, 1187" },
+    { "src": "/img/shot-map.jpg", "sizes": "1920x1200", "type": "image/jpeg", "form_factor": "wide", "label": "The campaign map" }
+  ]
+}

@@ -11,6 +11,13 @@
 <meta name="twitter:card" content="summary_large_image">
 <meta name="theme-color" content="#c98a4b">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Conquest">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rakkas&family=El+Messiri:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -34,7 +41,9 @@ nav .wrap{display:flex;align-items:center;gap:20px;height:60px}
 nav .links{display:flex;gap:18px;margin-left:auto;align-items:center}
 nav .links a{color:var(--ink);text-decoration:none;font-weight:600}
 nav .links a:hover{color:#fff4dc}
+nav .btn{white-space:nowrap}
 @media (max-width:760px){nav .links a:not(.btn){display:none}}
+@media (max-width:560px){nav .links a[data-install]{display:none}.logo{font-size:24px}}
 /* buttons */
 .btn{display:inline-block;font-family:'Rakkas';font-size:22px;color:var(--ink);text-decoration:none;padding:12px 30px;border-radius:10px;border:1.5px solid #6e2808;
  background:linear-gradient(180deg,#fbd9a0,#e59a52 45%,#f2b46a 58%,#a8501e);box-shadow:0 4px 12px rgba(110,45,10,.45),inset 0 0 0 2px rgba(255,240,200,.45);transition:transform .15s,box-shadow .15s}
@@ -96,8 +105,20 @@ section h2{font-size:clamp(36px,5vw,56px);margin:4px 0 14px}
 .hall td{padding:9px 14px;border-top:1px solid rgba(122,52,16,.15)}
 .hall td.n{text-align:right;font-variant-numeric:tabular-nums}.hall th.n{text-align:right}
 .hall tr:nth-child(-n+3) td:first-child{color:#a8220e;font-weight:700}
-.hall .empty{padding:30px;text-align:center;color:var(--ink2)}
+.hall td.empty,.hall tr:first-child td.empty{padding:30px;text-align:center;color:var(--ink2);font-weight:500}
 @media (max-width:560px){.hall .hide-s{display:none}}
+/* app */
+.app-box{display:flex;gap:32px;align-items:center}
+.app-box img{width:128px;height:128px;border-radius:28px;box-shadow:0 10px 30px rgba(110,45,10,.4);flex:none}
+@media (max-width:640px){.app-box{flex-direction:column;align-items:flex-start}}
+.app-note{display:inline-block;margin-left:12px;color:var(--terra);font-weight:600}
+dialog#inst{border:2px solid var(--rust);border-radius:14px;padding:26px 28px;max-width:420px;width:calc(100% - 32px);background:var(--card);color:var(--ink);box-shadow:0 20px 60px rgba(60,20,4,.5)}
+dialog#inst::backdrop{background:rgba(110,45,10,.45)}
+dialog#inst h3{font-size:28px;margin-bottom:8px}
+dialog#inst ol{padding-left:22px;margin:10px 0 18px}dialog#inst li{margin:6px 0}
+.ios-share{display:inline-block;width:18px;height:20px;vertical-align:-3px;border:2px solid var(--ink);border-top:none;border-radius:0 0 3px 3px;position:relative;margin:0 2px}
+.ios-share::before{content:"";position:absolute;left:50%;top:-9px;width:2px;height:13px;background:var(--ink);transform:translateX(-50%)}
+.ios-share::after{content:"";position:absolute;left:50%;top:-10px;width:7px;height:7px;border-left:2px solid var(--ink);border-top:2px solid var(--ink);transform:translateX(-50%) rotate(45deg)}
 /* footer */
 footer{padding:40px 0 60px;color:var(--ink2);font-size:15px;border-top:1px solid rgba(122,52,16,.25)}
 footer .wrap{display:flex;gap:24px;justify-content:space-between;flex-wrap:wrap}
@@ -111,12 +132,12 @@ footer .wrap{display:flex;gap:24px;justify-content:space-between;flex-wrap:wrap}
 <body>
 <div class="dust" aria-hidden="true" id="dust"></div>
 <nav><div class="wrap"><a class="logo" href="/"><img src="/favicon.svg" alt="">CONQUEST</a>
- <div class="links"><a href="#campaign">Campaign</a><a href="#soldiers">Soldiers</a><a href="#bosses">Bosses</a><a href="#hall">Hall</a><a class="btn small" href="/play">Play</a></div></div></nav>
+ <div class="links"><a href="#campaign">Campaign</a><a href="#soldiers">Soldiers</a><a href="#bosses">Bosses</a><a href="#hall">Hall</a><a class="btn small ghost" href="#app" data-install>Download app</a><a class="btn small" href="/play">Play</a></div></div></nav>
 <header class="hero"><div class="wrap">
  <h1>CONQUEST</h1>
  <p class="tag">Hold the line across thirteen centuries.</p>
  <p class="lede">A free tower-defence campaign through 34 real battles, from Covadonga in 722 to Barisha in 2019. Gather gold, pick your squad and hold every lane. Plays in your browser, on phone or computer.</p>
- <div class="cta-row"><a class="btn" href="/play">Play now, free</a><a class="btn ghost" href="#campaign">See the campaign</a></div>
+ <div class="cta-row"><a class="btn" href="/play">Play now, free</a><a class="btn ghost" href="#app" data-install>Download app</a></div>
  <div class="facts"><span>34 battles</span><span>25 soldiers</span><span>5 bosses</span><span>6 chapters</span><span>Music that never repeats</span></div>
  <a class="frame" href="/play"><img src="/img/shot-battle.jpg" alt="A battle at the Horns of Hattin, 1187" width="1920" height="1200"></a>
 </div></header>
@@ -153,12 +174,19 @@ footer .wrap{display:flex;gap:24px;justify-content:space-between;flex-wrap:wrap}
   <p class="intro">The campaign ends at night, under flares and searchlights, with its own opening titles and its own music. The leader of ISIS, Abu Bakr al-Baghdadi, is cornered. Hold every lane and let none escape.</p>
   <a class="btn small" href="/play">Fight your way there</a></div>
 </div></section>
+<section id="app"><div class="wrap app-box">
+ <img src="/icons/icon-512.png" alt="Conquest app icon" width="128" height="128">
+ <div><p class="kicker">Get the app</p><h2>Conquest on your home screen</h2>
+  <p class="intro" style="margin-bottom:16px">Install Conquest like an app: its own icon, full screen, landscape, no browser bar, and it keeps working offline. Free, no app store, no account, about 4 MB.</p>
+  <a class="btn" href="#app" data-install>Download app</a> <span class="app-note" id="appnote"></span></div>
+</div></section>
 <section id="hall" class="band"><div class="wrap">
  <p class="kicker">Hall of Commanders</p><h2>The best commanders</h2>
  <p class="intro">Choose a commander name in the game and your score joins the Hall automatically. No account needed. <span id="count"></span></p>
- <div class="hall"><table><thead><tr><th>#</th><th>Commander</th><th class="n">Battles</th><th class="n hide-s">Bosses</th><th class="n">Score</th></tr></thead><tbody id="hall"><tr><td colspan="5" class="empty">Loading the Hall…</td></tr></tbody></table></div>
+ <div class="hall"><table><thead><tr><th>#</th><th>Commander</th><th class="n">Battles</th><th class="n hide-s">Bosses</th><th class="n">Score</th></tr></thead><tbody id="hallrows"><tr><td colspan="5" class="empty">Loading the Hall…</td></tr></tbody></table></div>
 </div></section>
 </main>
+<dialog id="inst"><h3 id="inst-t">Install Conquest</h3><div id="inst-b"></div><form method="dialog"><button class="btn small">Got it</button></form></dialog>
 <footer><div class="wrap">
  <div><strong style="font-family:Rakkas;font-size:22px;color:var(--ink)">CONQUEST</strong><br>A tower-defence game about real battles, 722–2019.</div>
  <div style="max-width:520px">Battles, commanders and dates follow the historical record. The game mixes eras on purpose: a Roman legionary can stand next to a Korean rocket cart.</div>
@@ -170,12 +198,30 @@ footer .wrap{display:flex;gap:24px;justify-content:space-between;flex-wrap:wrap}
  var SB='https://ezlzpvdqboncsybkvpbd.supabase.co/rest/v1/rpc/',K='sb_publishable_iAvwhKJ40w1mqM_HCwX0RA_we56YWZI';
  function rpc(f,a){return fetch(SB+f,{method:'POST',headers:{apikey:K,'Content-Type':'application/json'},body:JSON.stringify(a||{})}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});}
  function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
- var tb=document.getElementById('hall');
+ var tb=document.getElementById('hallrows');
  rpc('conquest_top',{p_limit:20}).then(function(r){
   if(!r){tb.innerHTML='<tr><td colspan="5" class="empty">The Hall is out of reach right now. Try again in a moment.</td></tr>';return;}
   if(!r.length){tb.innerHTML='<tr><td colspan="5" class="empty">No commanders yet. Win a battle, choose a name, and be the first.</td></tr>';return;}
   tb.innerHTML=r.map(function(x){return '<tr><td>'+x.rank+'</td><td>'+esc(x.name)+'</td><td class="n">'+x.battles_won+'</td><td class="n hide-s">'+x.bosses+'</td><td class="n">'+x.score+'</td></tr>';}).join('');});
  rpc('conquest_count').then(function(n){if(typeof n==='number'&&n>0)document.getElementById('count').textContent=n+(n===1?' commander has':' commanders have')+' joined so far.';});
+
+ /* ---- install as an app ---- */
+ if('serviceWorker' in navigator)addEventListener('load',function(){navigator.serviceWorker.register('/sw.js').catch(function(){});});
+ var deferred=null,ua=navigator.userAgent,ios=/iPhone|iPad|iPod/.test(ua)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1),
+  android=/Android/.test(ua),standalone=matchMedia('(display-mode: standalone)').matches||matchMedia('(display-mode: fullscreen)').matches||navigator.standalone===true,
+  btns=[].slice.call(document.querySelectorAll('[data-install]')),note=document.getElementById('appnote');
+ function setAll(t){btns.forEach(function(b){b.textContent=t;});}
+ if(standalone){setAll('Open the game');btns.forEach(function(b){b.href='/play';});if(note)note.textContent='You are using the app.';}
+ addEventListener('beforeinstallprompt',function(e){e.preventDefault();deferred=e;if(note)note.textContent='Installs in one tap.';});
+ addEventListener('appinstalled',function(){deferred=null;setAll('Installed ✓');if(note)note.textContent='Find Conquest on your home screen or desktop.';});
+ function show(t,html){document.getElementById('inst-t').textContent=t;document.getElementById('inst-b').innerHTML=html;var d=document.getElementById('inst');if(d.showModal)d.showModal();else alert(t+'\n\n'+d.textContent);}
+ btns.forEach(function(b){b.addEventListener('click',function(ev){if(standalone)return;ev.preventDefault();
+  if(deferred){deferred.prompt();deferred.userChoice.then(function(){deferred=null;});return;}
+  if(ios)show('Add Conquest to your Home Screen','<p>Apple installs web apps from the Share menu:</p><ol><li>Tap the <b>Share</b> button <span class="ios-share" aria-hidden="true"></span> in the browser bar.</li><li>Scroll and tap <b>Add to Home Screen</b>.</li><li>Tap <b>Add</b>. Conquest appears with its own icon.</li></ol><p style="font-size:14px;color:var(--terra)">On older iPhones this only works in Safari.</p>');
+  else if(android)show('Install Conquest','<ol><li>Open your browser menu <b>⋮</b> (top right).</li><li>Tap <b>Install app</b> or <b>Add to Home screen</b>.</li><li>Confirm. Conquest appears with its own icon.</li></ol>');
+  else if(/Firefox/.test(ua))show('Install Conquest','<p>Firefox on computers cannot install web apps. Open this page in <b>Chrome</b> or <b>Edge</b> and press Download app again, or just play in your browser.</p>');
+  else if(/Safari/.test(ua)&&!/Chrome|Edg/.test(ua))show('Add Conquest to your Dock','<ol><li>In the menu bar choose <b>File</b>.</li><li>Choose <b>Add to Dock</b>.</li></ol>');
+  else show('Install Conquest','<ol><li>Look for the install icon <b>⊕</b> at the right end of the address bar, or open the browser menu.</li><li>Choose <b>Install Conquest</b>.</li></ol><p style="font-size:14px">If you do not see it, reload the page once and try again.</p>');});});
 })();
 </script>
 </body>
