@@ -37,5 +37,6 @@ create table public.conquest_saves (
   updated_at timestamptz not null default now()
 );
 alter table public.conquest_saves enable row level security;
--- conquest_backup(code, data): merges and never goes backwards (highest unlocked, best score per battle).
+-- conquest_backup(code, data): merges and never goes backwards (highest unlocked, best score per battle,
+--   stars earned per battle as a 3-bit mask under "hon", OR-merged so a star is never lost).
 -- conquest_restore(code): returns the save for that code, or null.
