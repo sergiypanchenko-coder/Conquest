@@ -1191,9 +1191,9 @@ const TERR=['mountGreen','steppe','steppe','mountain','grass','steppe','coast','
  'desert','desert','desert','desert','dusk','mountGreen','steppe','mountain','desert','desert','desert','olive'];
 const STONEP=ctx.createPattern(texCanvas(64,64,(x,y)=>{const n=NZ.fbm(x/16,y/16,3,4),k=.78+.3*n+(rnd()-.5)*.08;return[150*k,146*k,138*k];}),'repeat');
 const BGC={};
-let KIT=null;
+let KIT=null,KITGEO=false;
 function kitFor(L,tk){if(L.ch===5)return'modern';return{desert:'ruins',dusk:'ruins',coast:'ruins',coastRock:'ruins',grass:'village',marsh:'village',mountain:'highland',mountGreen:'highland',steppe:'camp',olive:'camp',burnt:'camp',naval:'harbor'}[tk]||'ruins';}
-function getBG(L){const tk=L.terrain||TERR[L.i]||'desert',kt=kitFor(L,tk),key=tk+'_'+kt+'_'+L.water.join('')+'_'+W+'x'+H;if(!BGC[key]){KIT=kt;BGC[key]=buildBG(tk,L.water);}return BGC[key];}
+function getBG(L){const tk=L.terrain||TERR[L.i]||'desert',kt=kitFor(L,tk),key=tk+'_'+kt+(L.name==='Didgori'?'G':'')+'_'+L.water.join('')+'_'+W+'x'+H;if(!BGC[key]){KIT=kt;KITGEO=L.name==='Didgori';BGC[key]=buildBG(tk,L.water);}return BGC[key];}
 function buildBG(kind,water){const T=TERRAIN[kind]||TERRAIN.desert,K=2,c=document.createElement('canvas');c.width=W*K;c.height=H*K;const g=c.getContext('2d');g.scale(K,K);
   const HH=ROWS*CH,hw=Math.ceil(W/2),hh=Math.ceil(HH/2),wet=r=>water.includes(r)||(T.deck&&false),gx=LEFT+COLS*CW,seaX=W-62;
   const seaCol=(x,y,deep)=>{let cr=110+(36-110)*deep,cg=176+(104-176)*deep,cb=162+(118-162)*deep;const n=NZ.fbm(x/170,y/170,3),k=.9+.18*n;cr*=k;cg*=k;cb*=k;
@@ -1356,8 +1356,8 @@ function buildBG(kind,water){const T=TERRAIN[kind]||TERRAIN.desert,K=2,c=documen
     g.beginPath();g.moveTo(x-26*s,y-26*s);g.lineTo(x-8*s,y-44*s);g.lineTo(x+2*s,y-20*s);g.lineTo(x-14*s,y-6*s);g.closePath();g.fillStyle='#c8c2b2';g.fill();g.beginPath();g.moveTo(x+2*s,y-20*s);g.lineTo(x+14*s,y-38*s);g.lineTo(x+30*s,y-14*s);g.lineTo(x+26*s,y);g.lineTo(x+4*s,y);g.closePath();g.fillStyle='#6a665c';g.fill();
     g.beginPath();P.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.closePath();ol(1.6);if(T.green){g.fillStyle='rgba(90,140,60,.6)';g.beginPath();g.ellipse(x-12*s,y-36*s,10*s,4*s,-.6,0,7);g.fill();}};
   const banner=(x,y,s,col)=>{shadowP(x-2,y-2,4,2,60*s);g.beginPath();g.rect(x-2*s,y-104*s,4*s,104*s);g.fillStyle=cyl(x-2*s,4*s,'#a87a48','#7a5230','#4a3018');g.fill();ol(1);g.beginPath();g.arc(x,y-106*s,4*s,0,7);g.fillStyle='#e0b84a';g.fill();ol(1);
-    g.beginPath();g.moveTo(x+2*s,y-100*s);g.quadraticCurveTo(x+22*s,y-96*s,x+40*s,y-102*s);g.lineTo(x+36*s,y-84*s);g.lineTo(x+42*s,y-66*s);g.quadraticCurveTo(x+22*s,y-62*s,x+2*s,y-66*s);g.closePath();const gr=g.createLinearGradient(x,0,x+42*s,0);gr.addColorStop(0,col[0]);gr.addColorStop(1,col[1]);g.fillStyle=gr;g.fill();ol(1.2);
-    g.fillStyle=col[2]||'#f2e2b8';g.beginPath();g.arc(x+20*s,y-83*s,6*s,0,7);g.fill();};
+    g.beginPath();g.moveTo(x+2*s,y-100*s);g.quadraticCurveTo(x+22*s,y-96*s,x+40*s,y-102*s);g.lineTo(x+36*s,y-84*s);g.lineTo(x+42*s,y-66*s);g.quadraticCurveTo(x+22*s,y-62*s,x+2*s,y-66*s);g.closePath();const gr=g.createLinearGradient(x,0,x+42*s,0);gr.addColorStop(0,col[0]);gr.addColorStop(1,col[1]);g.fillStyle=gr;g.fill();if(KITGEO){g.save();g.clip();g.drawImage(geoFlagTex(),x+1*s,y-103*s,43*s,40*s);g.fillStyle='rgba(60,30,20,.12)';g.fillRect(x+30*s,y-103*s,14*s,40*s);g.restore();ol(1.2);}else{ol(1.2);
+    g.fillStyle=col[2]||'#f2e2b8';g.beginPath();g.arc(x+20*s,y-83*s,6*s,0,7);g.fill();}};
   const palisade=(x,y,s)=>{for(let k=0;k<5;k++){const px=x+k*9*s,h=(40+((k*7)%5)*4)*s;shadowP(px-4*s,y-3*s,8*s,3*s,18*s);g.beginPath();g.moveTo(px-4.5*s,y);g.lineTo(px-4.5*s,y-h);g.lineTo(px,y-h-8*s);g.lineTo(px+4.5*s,y-h);g.lineTo(px+4.5*s,y);g.closePath();g.fillStyle=cyl(px-4.5*s,9*s,'#b8864c','#8a5e30','#5a3a1a');g.fill();ol(1);}
     g.fillStyle='#5a3a1a';g.fillRect(x-6*s,y-28*s,48*s,4*s);g.fillRect(x-6*s,y-14*s,48*s,4*s);};
   const well=(x,y,s)=>{shadowP(x-18*s,y-8*s,36*s,8*s,22*s);g.beginPath();g.ellipse(x,y-4*s,18*s,7*s,0,0,7);g.fillStyle='#8a8478';g.fill();g.beginPath();g.rect(x-18*s,y-22*s,36*s,18*s);g.fillStyle=cyl(x-18*s,36*s,'#cfc8b6','#9e978a','#6a645a');g.fill();ol();
@@ -1747,8 +1747,40 @@ function atmos(k,sx,sy){k=k==null?1:k;sx=sx==null?W-90:sx;sy=sy==null?-30:sy;con
   ctx.restore();}
 
 function popS(p){if(p==null||p>=.4)return 1;const k=p/.4-1;return .55+.45*(1+2.7*k*k*k+1.7*k*k);}
+
+/* holy aura: golden glow over the 3x3 tiles each Orthodox Cross protects */
+function crossAura(edgeOnly){const cr=G.defs.filter(d=>d.type==='monk');if(!cr.length)return;const t=G.t||0,on=new Set();
+  cr.forEach(d=>{for(let r=d.row-1;r<=d.row+1;r++)for(let c=d.col-1;c<=d.col+1;c++)if(r>=0&&r<ROWS&&c>=0&&c<COLS)on.add(r*100+c);});
+  const pul=.75+.25*Math.sin(t*2.2);ctx.save();
+  if(!edgeOnly)on.forEach(v=>{const r=Math.floor(v/100),c=v%100,x=LEFT+c*CW,y=TOP+r*CH,g=ctx.createRadialGradient(x+CW/2,y+CH/2,4,x+CW/2,y+CH/2,Math.max(CW,CH)*.75);
+    g.addColorStop(0,'rgba(255,246,200,'+(.5*pul)+')');g.addColorStop(.6,'rgba(255,214,110,'+(.32*pul)+')');g.addColorStop(1,'rgba(255,190,60,'+(.26*pul)+')');ctx.fillStyle=g;ctx.fillRect(x,y,CW,CH);});
+  ctx.lineCap='round';
+  for(const pass of[[9,'rgba(255,200,70,'+(.3*pul)+')'],[2.6,'rgba(255,246,196,'+(.95*pul)+')']]){ctx.lineWidth=pass[0];ctx.strokeStyle=pass[1];ctx.beginPath();
+    on.forEach(v=>{const r=Math.floor(v/100),c=v%100,x=LEFT+c*CW+2,y=TOP+r*CH+2,w=CW-4,h=CH-4;
+      if(!on.has(v-100)){ctx.moveTo(x,y);ctx.lineTo(x+w,y);}if(!on.has(v+100)){ctx.moveTo(x,y+h);ctx.lineTo(x+w,y+h);}
+      if(!on.has(v-1)){ctx.moveTo(x,y);ctx.lineTo(x,y+h);}if(!on.has(v+1)){ctx.moveTo(x+w,y);ctx.lineTo(x+w,y+h);}});ctx.stroke();}
+  /* motes of light rising inside the protected ground */
+  ctx.fillStyle='#fff3c0';cr.forEach((d,j)=>{for(let i=0;i<10;i++){const ph=(t*.35+i*.1+j*.37)%1,c=d.col-1+((i*7+j)%3),r=d.row-1+((i*5+j*2)%3);if(r<0||r>=ROWS||c<0||c>=COLS)continue;
+    const x=LEFT+c*CW+CW*(.2+.6*((i*37)%10)/10),y=TOP+r*CH+CH*(1-ph);ctx.globalAlpha=Math.sin(ph*PI)*.9;ctx.fillRect(x-1.6,y-1.6,3.2,3.2);}});
+  ctx.restore();}
+/* the flag of Georgia, waving: white field, St George's cross, four crosses in the corners */
+let GEOF=null;function geoFlagTex(){if(GEOF)return GEOF;const w=120,h=80,c=document.createElement('canvas');c.width=w;c.height=h;const g=c.getContext('2d');g.fillStyle='#fbfaf6';g.fillRect(0,0,w,h);g.fillStyle='#e8112d';
+  g.fillRect(w/2-8,0,16,h);g.fillRect(0,h/2-8,w,16);
+  const bol=(x,y,s)=>{g.beginPath();for(const a of[0,PI/2,PI,PI*1.5]){const ca=Math.cos(a),sa=Math.sin(a);g.moveTo(x+ca*2.2*s-sa*1.6*s,y+sa*2.2*s+ca*1.6*s);g.lineTo(x+ca*9*s-sa*4.2*s,y+sa*9*s+ca*4.2*s);g.lineTo(x+ca*9*s+sa*4.2*s,y+sa*9*s-ca*4.2*s);g.lineTo(x+ca*2.2*s+sa*1.6*s,y+sa*2.2*s-ca*1.6*s);}g.fill();g.fillRect(x-2.3*s,y-2.3*s,4.6*s,4.6*s);};
+  for(const[x,y]of[[w/4-2,h/4-2],[w*3/4+2,h/4-2],[w/4-2,h*3/4+2],[w*3/4+2,h*3/4+2]])bol(x,y,.95);GEOF=c;return c;}
+function geoFlag(x,y,w,h,t,ph,pole){const tex=geoFlagTex(),N=16;
+  if(pole!==false){ctx.strokeStyle='#3a2410';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x,y-4);ctx.lineTo(x,y+(pole||h*2.4));ctx.stroke();ctx.strokeStyle='#8a6038';ctx.lineWidth=1.4;ctx.stroke();ctx.fillStyle='#e0b84a';ctx.beginPath();ctx.arc(x,y-5,3,0,PI*2);ctx.fill();}
+  for(let i=0;i<N;i++){const u=i/N,dy=Math.sin(t*4+ph-u*5)*h*.13*u,sh=.82+.18*Math.cos(t*4+ph-u*5);
+    ctx.drawImage(tex,u*tex.width,0,tex.width/N+.6,tex.height,x+u*w,y+dy,w/N+.6,h*(1-u*.06));
+    if(sh<.97){ctx.fillStyle='rgba(40,20,20,'+((1-sh)*.9).toFixed(3)+')';ctx.fillRect(x+u*w,y+dy,w/N+.6,h*(1-u*.06));}}
+  ctx.strokeStyle='rgba(60,30,20,.35)';ctx.lineWidth=.8;ctx.strokeRect(x,y+.5,1,h);}
+/* Didgori: banners all over the castle and the field's edge */
+function didgoriFlags(){const t=G.t||0;ctx.save();
+  for(let k=0;k<ROWS;k++)geoFlag(22,TOP+k*CH+5,42,28,t,k*1.3,44);
+  const ex=LEFT+COLS*CW,bw=W-ex;if(bw>60){for(let k=0;k<3;k++){const x=ex+bw*(.2+.3*k)+((k%2)?10:-10),y=TOP+18+k*CH*1.55;geoFlag(x,y,48,32,t,k*2.1+4,96);}}
+  ctx.restore();}
 function drawGame(){const L=G.L;ctx.save();if(G.shake>0)ctx.translate((Math.random()-.5)*10*G.shake*3,(Math.random()-.5)*10*G.shake*3);
-  drawField(L);
+  drawField(L);crossAura();
   if(G.sel||G.shovel){for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const ex=G.grid[r][c],wet=L.water.includes(r);let ok;
       if(G.shovel)ok=!!ex;else if(G.sel==='raft')ok=wet&&!ex;else ok=wet?(ex&&ex.type==='raft'):!ex;
       if(ok){ctx.fillStyle=G.shovel?'rgba(200,40,40,.2)':'rgba(255,230,160,.2)';ctx.fillRect(LEFT+c*CW+4,TOP+r*CH+4,CW-8,CH-8);ctx.strokeStyle=G.shovel?'rgba(255,120,120,.5)':'rgba(255,230,160,.55)';ctx.lineWidth=1;ctx.strokeRect(LEFT+c*CW+4.5,TOP+r*CH+4.5,CW-9,CH-9);}}}
@@ -1784,7 +1816,7 @@ function drawGame(){const L=G.L;ctx.save();if(G.shake>0)ctx.translate((Math.rand
   G.parts.forEach(p=>{ctx.globalAlpha=Math.max(0,Math.min(1,p.life*(p.smoke?.8:2)));ctx.fillStyle=p.c;circ(p.x,p.y,p.r);});ctx.globalAlpha=1;
   G.coins.forEach(c=>{const s=1+Math.sin(G.t*6+c.x)*0.06;ctx.save();ctx.translate(c.x,c.y);ctx.scale(s,s);if(c.age>6)ctx.globalAlpha=0.5+0.5*Math.sin(G.t*20);
     glow(0,0,26,'rgba(255,220,80,.55)');starPath(ctx,0,0,17,13,8);ctx.fillStyle='#b8861a';ctx.fill();sph(0,0,14,'#e8b830');sph(0,0,10,'#ffd34d',0);txt('✦',0,1,12,'#b8861a');ctx.restore();});
-  motes();grade();if(L.night)nightLayer();if(L.name==='Didgori')fogLayer();drawStorm();ctx.restore();
+  motes();grade();if(L.night)nightLayer();if(L.name==='Didgori'){fogLayer();crossAura(true);didgoriFlags();}drawStorm();ctx.restore();
   drawHUD();
   {const B=G.foes.find(e=>FOE[e.type].boss);if(B){const F=FOE[B.type],bw=360,bx=W/2-bw/2,by=TOP+8,k=Math.max(0,B.hp/B.max);ctx.fillStyle='rgba(90,30,6,.7)';rpath(bx-4,by-4,bw+8,30,6);ctx.fill();
     const g=ctx.createLinearGradient(0,by,0,by+22);g.addColorStop(0,'#ff8a4a');g.addColorStop(1,'#a8220e');ctx.fillStyle=g;rpath(bx,by,bw*k,22,4);ctx.fill();ctx.strokeStyle='#ffd27a';ctx.lineWidth=1.5;rpath(bx,by,bw,22,4);ctx.stroke();ctx.fillStyle='#ffd27a';ctx.fillRect(bx+bw*.5-1,by,2,22);
@@ -1873,7 +1905,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261119-121259';
+const BUILD='20261119-121525';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
@@ -1890,7 +1922,7 @@ function updateFrame(){if(!UPD.ready)return;
 function frame(now){try{musicFrame();}catch(e){}const rawDt=(now-last)/1000;let dt=Math.max(0,Math.min(0.05,rawDt));last=now;perfTick(rawDt);G.t=(G.t||0)+dt;G.btns=[];
   ctx.clearRect(0,0,W,H);
   if(G.state==='menu'){if((G.t||0)-ONLINE.loadedAt>30||G.justBack){G.justBack=0;loadOnline();}drawMenu();atmos(.8);if(G.hall){G.btns=[];drawHall();}else if(G.bk){G.btns=[];drawBackup();}}
-  else if(G.state==='prep'){updatePrep(dt);drawPrep();if(G.L.name==='Didgori')fogLayer();atmos(fieldAtmos(G.L,.7));if(G.L.final&&FIN_T>=0&&FIN_T<9)finaleCard();if(G.phase==='scout')G.btns=[{x:0,y:0,w:W,h:H,fn:()=>{if(G.L.final&&FIN_T>=0&&FIN_T<9){FIN_T=9;return;}G.phase='pick';G.pt=0;}}];}
+  else if(G.state==='prep'){updatePrep(dt);drawPrep();if(G.L.name==='Didgori'){fogLayer();didgoriFlags();}atmos(fieldAtmos(G.L,.7));if(G.L.final&&FIN_T>=0&&FIN_T<9)finaleCard();if(G.phase==='scout')G.btns=[{x:0,y:0,w:W,h:H,fn:()=>{if(G.L.final&&FIN_T>=0&&FIN_T<9){FIN_T=9;return;}G.phase='pick';G.pt=0;}}];}
   else{if(G.state==='play')stepWarm(2);if(G.state==='play'&&!G.paused){for(let i=0;i<G.speed;i++)update(dt);}
     drawGame();if(!(G.L&&G.L.night))atmos(fieldAtmos(G.L,.55));G.btns=G.state==='play'&&!G.paused?G.btns:[];
     if(G.paused){overlay('Paused','The enemy waits for no one.','Resume',()=>{G.paused=false;});ibtn(W-32,128,'sound',SOUND?'Sound':'Muted',toggleSound,{off:!SOUND});ibtn(W-32,196,'music',MUSIC?'Music':'No music',toggleMusic,{off:!MUSIC});ibtn(W-32,264,'gfx',gfxLabel().replace(/^Graphics:\s*/,''),toggleGfx);}
