@@ -884,7 +884,7 @@ const DEFS={
  ballista:{name:'Scorpio',cost:175,hp:350,cd:10,lvl:14},
  shinobi:{name:'Shinobi',cost:75,hp:300,cd:30,lvl:17},
  brazier:{name:'Fire Brazier',cost:175,hp:400,cd:8,lvl:18},
- banker:{name:'Medici Banker',cost:150,hp:300,cd:8,lvl:19},
+ banker:{name:'Medici Banker',cost:150,hp:300,cd:8,lvl:6},
  hwacha:{name:'Hwacha',cost:300,hp:400,cd:15,lvl:20}
 };
 DEFS.crossbow.lvl=5;DEFS.cossack.lvl=10;DEFS.monk.lvl=6;DEFS.hussar.lvl=11;DEFS.greekfire.lvl=15;DEFS.mortar.lvl=16;DEFS.keg.lvl=2;
@@ -1630,7 +1630,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261119-013602';
+const BUILD='20261119-014128';
 const UPD={ready:false,going:false};
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD)UPD.ready=true;}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;const done=()=>setTimeout(()=>location.reload(),350);
