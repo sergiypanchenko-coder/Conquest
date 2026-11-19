@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Conquest · Hold the line across thirteen centuries</title>
+<meta name="description" content="Conquest is a free tower-defence campaign through 34 real battles, from Covadonga in 722 to Barisha in 2019. 25 historical soldiers, 5 bosses, plays in your browser.">
+<meta property="og:title" content="Conquest">
+<meta property="og:description" content="Hold the line across thirteen centuries. 34 real battles, 25 soldiers, 5 bosses. Free in your browser.">
+<meta property="og:image" content="/img/shot-battle.jpg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="theme-color" content="#c98a4b">
+<link rel="icon" href="/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rakkas&family=El+Messiri:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--sand:#f2d9ab;--sand2:#e8c690;--stone:#d39b5e;--terra:#a8501e;--rust:#7a3410;--ink:#3e1806;--ink2:#6a2a0a;--hot:#e8762c;--teal:#2f7880;--card:#f7e4bd}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--sand);color:var(--ink);font:500 17px/1.6 'El Messiri',Georgia,serif;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:0;background:
+ radial-gradient(1200px 600px at 85% -10%,rgba(255,226,160,.85),transparent 60%),
+ repeating-linear-gradient(176deg,rgba(150,80,20,.035) 0 3px,transparent 3px 11px),
+ linear-gradient(180deg,#f6dfb2,#ecc890 60%,#e3b67a)}
+main,header,footer{position:relative;z-index:1}
+a{color:var(--terra)}
+h1,h2,h3{font-family:'Rakkas',Georgia,serif;font-weight:400;line-height:1.1;margin:0;color:var(--ink)}
+.wrap{max-width:1140px;margin:0 auto;padding:0 20px}
+/* nav */
+nav{position:sticky;top:0;z-index:20;background:linear-gradient(180deg,#d9a062,#c4844a);border-bottom:2px solid var(--rust);box-shadow:0 4px 16px rgba(110,45,10,.3)}
+nav .wrap{display:flex;align-items:center;gap:20px;height:60px}
+.logo{font-family:'Rakkas';font-size:28px;color:var(--ink);text-decoration:none;letter-spacing:.04em;display:flex;align-items:center;gap:10px}
+.logo img{width:30px;height:30px}
+nav .links{display:flex;gap:18px;margin-left:auto;align-items:center}
+nav .links a{color:var(--ink);text-decoration:none;font-weight:600}
+nav .links a:hover{color:#fff4dc}
+@media (max-width:760px){nav .links a:not(.btn){display:none}}
+/* buttons */
+.btn{display:inline-block;font-family:'Rakkas';font-size:22px;color:var(--ink);text-decoration:none;padding:12px 30px;border-radius:10px;border:1.5px solid #6e2808;
+ background:linear-gradient(180deg,#fbd9a0,#e59a52 45%,#f2b46a 58%,#a8501e);box-shadow:0 4px 12px rgba(110,45,10,.45),inset 0 0 0 2px rgba(255,240,200,.45);transition:transform .15s,box-shadow .15s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(110,45,10,.5),inset 0 0 0 2px rgba(255,240,200,.6)}
+.btn.small{font-size:17px;padding:6px 18px}
+.btn.ghost{background:rgba(255,240,210,.5)}
+/* hero */
+.hero{padding:56px 0 30px;text-align:center}
+.hero h1{font-size:clamp(64px,13vw,150px);letter-spacing:.03em;color:#4a1a06;text-shadow:0 3px 0 rgba(255,236,190,.8),0 10px 30px rgba(150,60,10,.35)}
+.tag{font-family:'Rakkas';font-size:clamp(22px,3.4vw,32px);color:var(--terra);margin:6px 0 10px}
+.lede{max-width:660px;margin:0 auto 26px;font-size:19px;color:var(--ink2)}
+.facts{display:flex;justify-content:center;gap:12px;flex-wrap:wrap;margin:22px 0 34px}
+.facts span{background:rgba(255,240,210,.6);border:1px solid rgba(122,52,16,.35);border-radius:999px;padding:4px 16px;font-weight:600}
+.frame{border:3px solid var(--rust);border-radius:8px;box-shadow:0 18px 50px rgba(110,45,10,.45),0 0 0 6px rgba(255,236,190,.55);overflow:hidden;background:#c98a4b;display:block}
+.frame img{display:block;width:100%;height:auto}
+.hero .frame{max-width:960px;margin:0 auto}
+.cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+/* sections */
+section{padding:70px 0}
+.kicker{font-family:'Rakkas';color:var(--terra);font-size:18px;letter-spacing:.12em;text-transform:uppercase}
+section h2{font-size:clamp(36px,5vw,56px);margin:4px 0 14px}
+.intro{max-width:720px;color:var(--ink2);font-size:18px;margin-bottom:30px}
+.band{background:rgba(255,240,210,.45);border-top:1px solid rgba(122,52,16,.2);border-bottom:1px solid rgba(122,52,16,.2)}
+.split{display:grid;grid-template-columns:1.25fr 1fr;gap:36px;align-items:center}
+@media (max-width:900px){.split{grid-template-columns:1fr}}
+/* steps */
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:30px}
+@media (max-width:760px){.steps{grid-template-columns:1fr}}
+.step{background:var(--card);border:1px solid rgba(122,52,16,.3);border-radius:10px;padding:22px;box-shadow:0 6px 18px rgba(110,45,10,.15)}
+.step b{font-family:'Rakkas';font-weight:400;font-size:42px;color:var(--hot);display:block;line-height:1}
+.step h3{font-size:24px;margin:6px 0}
+/* chapters */
+.chapters{list-style:none;padding:0;margin:0;display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+@media (max-width:900px){.chapters{grid-template-columns:repeat(2,1fr)}}@media (max-width:560px){.chapters{grid-template-columns:1fr}}
+.chapters>li{background:var(--card);border:1px solid rgba(122,52,16,.3);border-top:5px solid var(--terra);border-radius:8px;padding:18px 20px}
+.chapters h3{font-size:24px}.era{color:var(--terra);font-size:14px;font-weight:600;margin:2px 0 8px}
+.chapters ol{margin:0;padding-left:22px;color:var(--ink2)}.chapters ol li.boss{color:#a8220e;font-weight:700}
+/* soldiers */
+.soldiers{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+.sol{display:flex;gap:10px;align-items:flex-start;background:var(--card);border:1px solid rgba(122,52,16,.3);border-radius:10px;padding:10px 14px 12px 6px;box-shadow:0 4px 12px rgba(110,45,10,.12)}
+.sol img{width:84px;height:auto;flex:none;filter:drop-shadow(0 3px 2px rgba(80,30,5,.25))}
+.sol h3{font-size:20px;display:flex;justify-content:space-between;gap:8px;align-items:center}
+.cost{font-family:'Rakkas';font-size:14px;color:#fff2d8;background:radial-gradient(circle at 35% 35%,#e8783a,#8a2c0c);border-radius:999px;padding:1px 9px;flex:none}
+.ab{margin:4px 0 2px;font-weight:600;font-size:15px;line-height:1.35}
+.hi{margin:0;color:var(--terra);font-size:13.5px;line-height:1.35}
+/* bosses */
+.bosses{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px}
+.boss-card{background:linear-gradient(180deg,#f7e4bd,#efd0a0);border:1px solid rgba(122,52,16,.35);border-top:5px solid #a8220e;border-radius:10px;padding:16px 20px 20px}
+.boss-card img{width:100%;height:170px;object-fit:contain}
+.boss-card h3{font-size:24px;margin-top:6px}
+.boss-card p{margin:0;color:var(--ink2);font-size:16px}
+/* finale */
+.night{background:linear-gradient(180deg,#141a33,#232a4e);color:#f2e6cc}
+.night h2,.night h3{color:#ffd27a}.night .intro{color:#e8d8c0}.night .kicker{color:#ff9a5a}
+/* hall */
+.hall{background:var(--card);border:1px solid rgba(122,52,16,.3);border-radius:10px;box-shadow:0 8px 24px rgba(110,45,10,.18);overflow:hidden}
+.hall table{width:100%;border-collapse:collapse}
+.hall th{font-family:'Rakkas';font-weight:400;text-align:left;background:var(--terra);color:#fff2d8;padding:10px 14px;font-size:17px}
+.hall td{padding:9px 14px;border-top:1px solid rgba(122,52,16,.15)}
+.hall td.n{text-align:right;font-variant-numeric:tabular-nums}.hall th.n{text-align:right}
+.hall tr:nth-child(-n+3) td:first-child{color:#a8220e;font-weight:700}
+.hall .empty{padding:30px;text-align:center;color:var(--ink2)}
+@media (max-width:560px){.hall .hide-s{display:none}}
+/* footer */
+footer{padding:40px 0 60px;color:var(--ink2);font-size:15px;border-top:1px solid rgba(122,52,16,.25)}
+footer .wrap{display:flex;gap:24px;justify-content:space-between;flex-wrap:wrap}
+/* dust */
+.dust{position:fixed;inset:0;pointer-events:none;z-index:2;overflow:hidden}
+.dust i{position:absolute;width:3px;height:3px;border-radius:50%;background:rgba(255,236,200,.8);animation:drift linear infinite}
+@keyframes drift{from{transform:translateX(-10vw)}to{transform:translateX(110vw)}}
+@media (prefers-reduced-motion:reduce){.dust{display:none}html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<div class="dust" aria-hidden="true" id="dust"></div>
+<nav><div class="wrap"><a class="logo" href="/"><img src="/favicon.svg" alt="">CONQUEST</a>
+ <div class="links"><a href="#campaign">Campaign</a><a href="#soldiers">Soldiers</a><a href="#bosses">Bosses</a><a href="#hall">Hall</a><a class="btn small" href="/play">Play</a></div></div></nav>
+<header class="hero"><div class="wrap">
+ <h1>CONQUEST</h1>
+ <p class="tag">Hold the line across thirteen centuries.</p>
+ <p class="lede">A free tower-defence campaign through 34 real battles, from Covadonga in 722 to Barisha in 2019. Gather gold, pick your squad and hold every lane. Plays in your browser, on phone or computer.</p>
+ <div class="cta-row"><a class="btn" href="/play">Play now, free</a><a class="btn ghost" href="#campaign">See the campaign</a></div>
+ <div class="facts"><span>34 battles</span><span>25 soldiers</span><span>5 bosses</span><span>6 chapters</span><span>Music that never repeats</span></div>
+ <a class="frame" href="/play"><img src="/img/shot-battle.jpg" alt="A battle at the Horns of Hattin, 1187" width="1920" height="1200"></a>
+</div></header>
+<main>
+<section class="band"><div class="wrap">
+ <p class="kicker">How it plays</p><h2>Gold, squad, steel</h2>
+ <p class="intro">If you have played a lane-defence game before, you already know how. Every soldier is a real type of fighter from history, and every battle is a real one.</p>
+ <div class="steps">
+  <div class="step"><b>1</b><h3>Gather gold</h3><p>Financiers and Medici bankers mint coins, and gold falls from the sky. Tap it to collect.</p></div>
+  <div class="step"><b>2</b><h3>Choose your squad</h3><p>Pick five to seven soldiers before each battle. New recruits join almost every time you win.</p></div>
+  <div class="step"><b>3</b><h3>Hold every lane</h3><p>Waves grow bigger and harder. Each lane has one cannon as a last resort. Lose a lane twice and the wall falls.</p></div>
+ </div>
+</div></section>
+<section id="campaign"><div class="wrap split">
+ <div><p class="kicker">The campaign</p><h2>One road through history</h2>
+  <p class="intro">Battles sit on a real map, joined by one continuous route: from the mountains of Asturias, through the Holy Land, Georgia, the Danube and Ukraine, across the Mediterranean, to Pakistan, Syria and Iraq. Difficulty climbs with every battle.</p>
+  <a class="btn small" href="/play">Start at Covadonga</a></div>
+ <div class="frame"><img src="/img/shot-map.jpg" alt="The campaign map" loading="lazy" width="1920" height="1200"></div>
+</div>
+<div class="wrap" style="margin-top:40px"><ol class="chapters"><li><h3>Reconquista</h3><p class="era">Iberia, 722–1492</p><ol><li>Covadonga</li><li>Siege of Toledo</li><li>Sagrajas</li><li>Las Navas de Tolosa</li><li>Fall of Granada</li></ol></li><li><h3>The Crusades</h3><p class="era">Holy Land and Caucasus, 1097–1191</p><ol><li>Dorylaeum</li><li>Ascalon</li><li class="boss">Didgori · boss</li><li>Montgisard</li><li>Horns of Hattin</li><li>Siege of Acre</li></ol></li><li><h3>Gates of Vienna</h3><p class="era">Danube and Dniester, 1526–1683</p><ol><li>Mohács</li><li>First Siege of Vienna</li><li>Siege of Eger</li><li>Szigetvár</li><li class="boss">Khotyn · boss</li><li>Vienna, 1683</li></ol></li><li><h3>Mediterranean</h3><p class="era">Knights and corsairs, 1522–1571</p><ol><li>Siege of Rhodes</li><li>Preveza</li><li>Djerba</li><li>Great Siege of Malta</li><li>Lepanto</li></ol></li><li><h3>Gauntlet of Ages</h3><p class="era">Every era at once</p><ol><li>Sword and Scimitar</li><li>Sea and Sand</li><li>Iron and Powder</li><li>Riders of the Steppe</li><li>Gauntlet of Ages</li></ol></li><li><h3>War on Terror</h3><p class="era">Pakistan, Syria and Iraq, 2011–2019</p><ol><li class="boss">Abbottabad · boss</li><li>Kobani</li><li>Sinjar</li><li>Mosul</li><li>Raqqa</li><li class="boss">Baghuz · boss</li><li class="boss">Barisha · final mission</li></ol></li></ol></div></section>
+<section id="soldiers" class="band"><div class="wrap">
+ <p class="kicker">The soldiers</p><h2>Twenty-five fighters, one line</h2>
+ <p class="intro">Each soldier copies a classic garden-defence role, armed with kit from real history. Like plants in PvZ, they are balanced by cost: cheap walls, steady shooters, and costly specials on long cooldowns.</p>
+ <div class="soldiers"><article class="sol"><img src="/img/s_quarter.png" alt="Financier" loading="lazy" width="150" height="170"><div><h3>Financier<span class="cost">50</span></h3><p class="ab">Makes gold</p><p class="hi">Renaissance moneylender. Wars ran on borrowed gold.</p></div></article><article class="sol"><img src="/img/s_legion.png" alt="Legionary" loading="lazy" width="150" height="170"><div><h3>Legionary<span class="cost">50</span></h3><p class="ab">Shield wall</p><p class="hi">Roman legionary, 1st c. AD, with his curved scutum.</p></div></article><article class="sol"><img src="/img/s_archer.png" alt="Longbowman" loading="lazy" width="150" height="170"><div><h3>Longbowman<span class="cost">100</span></h3><p class="ab">Arrows</p><p class="hi">English longbowman, Hundred Years&#x27; War, 1337–1453.</p></div></article><article class="sol"><img src="/img/s_hoplite.png" alt="Hoplite" loading="lazy" width="150" height="170"><div><h3>Hoplite<span class="cost">100</span></h3><p class="ab">Spear, reaches 2 squares</p><p class="hi">Greek hoplite, 5th c. BC: bronze helmet, aspis shield, dory spear.</p></div></article><article class="sol"><img src="/img/s_templar.png" alt="Templar" loading="lazy" width="150" height="170"><div><h3>Templar<span class="cost">125</span></h3><p class="ab">Sword, close range</p><p class="hi">Knight Templar, order founded 1119, dissolved 1312.</p></div></article><article class="sol"><img src="/img/s_caltrops.png" alt="Caltrops" loading="lazy" width="150" height="170"><div><h3>Caltrops<span class="cost">100</span></h3><p class="ab">Hurt every foe that walks over; can&#x27;t be attacked; wreck wheels</p><p class="hi">Iron caltrops, scattered against horses since Roman times.</p></div></article><article class="sol"><img src="/img/s_keg.png" alt="Powder Keg" loading="lazy" width="150" height="170"><div><h3>Powder Keg<span class="cost">150</span></h3><p class="ab">Blasts 3×3</p><p class="hi">Gunpowder petard, used to blow gates in the 16th–17th c.</p></div></article><article class="sol"><img src="/img/s_levy.png" alt="Peasant Levy" loading="lazy" width="150" height="170"><div><h3>Peasant Levy<span class="cost">free</span></h3><p class="ab">Free! jabs whoever is right in front</p><p class="hi">Peasant levy, called up with whatever tools he owned.</p></div></article><article class="sol"><img src="/img/s_pavise.png" alt="Pavisier" loading="lazy" width="150" height="170"><div><h3>Pavisier<span class="cost">125</span></h3><p class="ab">A huge wall, tougher than the Legionary</p><p class="hi">Pavisier with a full-height pavise, Bohemia and Italy, 14th–15th c.</p></div></article><article class="sol"><img src="/img/s_crossbow.png" alt="Crossbowman" loading="lazy" width="150" height="170"><div><h3>Crossbowman<span class="cost">300</span></h3><p class="ab">Fires 3 bolts: one per lane, or 2 into his own lane at the edge</p><p class="hi">Genoese crossbowman, sought across Europe in the 13th–15th c.</p></div></article><article class="sol"><img src="/img/s_monk.png" alt="Hospitaller" loading="lazy" width="150" height="170"><div><h3>Hospitaller<span class="cost">100</span></h3><p class="ab">Heals soldiers around him</p><p class="hi">Knight Hospitaller, Order of St John, from 1099.</p></div></article><article class="sol"><img src="/img/s_berserker.png" alt="Berserker" loading="lazy" width="150" height="170"><div><h3>Berserker<span class="cost">150</span></h3><p class="ab">Kills one foe with a single blow, then must rest</p><p class="hi">Norse berserker, 9th–11th c., said to fight in a trance-like fury.</p></div></article><article class="sol"><img src="/img/s_naffatun.png" alt="Naffatun" loading="lazy" width="150" height="170"><div><h3>Naffatun<span class="cost">125</span></h3><p class="ab">Sets the whole lane ablaze, one use</p><p class="hi">Naffatun, naphtha troops of the Abbasid and Ayyubid armies.</p></div></article><article class="sol"><img src="/img/s_chukonu.png" alt="Zhuge Nu" loading="lazy" width="150" height="170"><div><h3>Zhuge Nu<span class="cost">200</span></h3><p class="ab">Shoots 2 bolts at a time</p><p class="hi">Zhuge nu repeating crossbow, China, still in use under the Ming.</p></div></article><article class="sol"><img src="/img/s_cossack.png" alt="Cossack" loading="lazy" width="150" height="170"><div><h3>Cossack<span class="cost">175</span></h3><p class="ab">Heavy musket</p><p class="hi">Zaporozhian Cossack, 16th–17th c., with a samopal musket.</p></div></article><article class="sol"><img src="/img/s_hussar.png" alt="Winged Hussar" loading="lazy" width="150" height="170"><div><h3>Winged Hussar<span class="cost">150</span></h3><p class="ab">When touched, charges the whole lane (450 each)</p><p class="hi">Polish winged hussar. 18,000 horse charged at Vienna in 1683.</p></div></article><article class="sol"><img src="/img/s_fougasse.png" alt="Fougasse" loading="lazy" width="150" height="170"><div><h3>Fougasse<span class="cost">25</span></h3><p class="ab">Cheap mine: arms after 10s, then blows up the first foe on it</p><p class="hi">Fougasse, a buried powder mine used in sieges, 16th–18th c.</p></div></article><article class="sol"><img src="/img/s_pitch.png" alt="Pitch Thrower" loading="lazy" width="150" height="170"><div><h3>Pitch Thrower<span class="cost">150</span></h3><p class="ab">Throws pitch: slows a foe and his attacks</p><p class="hi">Hot pitch, poured and thrown on attackers through the ages.</p></div></article><article class="sol"><img src="/img/s_ballista.png" alt="Scorpio" loading="lazy" width="150" height="170"><div><h3>Scorpio<span class="cost">175</span></h3><p class="ab">Bolt flies through every foe in the lane</p><p class="hi">Roman scorpio, a torsion bolt-thrower of the 1st c. AD.</p></div></article><article class="sol"><img src="/img/s_greekfire.png" alt="Greek Fire" loading="lazy" width="150" height="170"><div><h3>Greek Fire<span class="cost">200</span></h3><p class="ab">Flames, 2 squares</p><p class="hi">Byzantine fire siphon, 7th c. Its fire burned even on water.</p></div></article><article class="sol"><img src="/img/s_mortar.png" alt="Mortar" loading="lazy" width="150" height="170"><div><h3>Mortar<span class="cost">250</span></h3><p class="ab">Lobbed shells, splash</p><p class="hi">Bronze siege mortar, 17th c., lobbing shells over walls.</p></div></article><article class="sol"><img src="/img/s_shinobi.png" alt="Shinobi" loading="lazy" width="150" height="170"><div><h3>Shinobi<span class="cost">75</span></h3><p class="ab">Leaps onto the first foe that comes close, one use</p><p class="hi">Shinobi of Iga and Kōga, Sengoku Japan, 15th–16th c.</p></div></article><article class="sol"><img src="/img/s_brazier.png" alt="Fire Brazier" loading="lazy" width="150" height="170"><div><h3>Fire Brazier<span class="cost">175</span></h3><p class="ab">Arrows and bolts that fly through catch fire: double damage</p><p class="hi">Fire-arrow brazier: archers lit their arrows from it.</p></div></article><article class="sol"><img src="/img/s_banker.png" alt="Medici Banker" loading="lazy" width="150" height="170"><div><h3>Medici Banker<span class="cost">150</span></h3><p class="ab">Makes twice the gold</p><p class="hi">Medici banker. The Medici Bank was founded in Florence in 1397.</p></div></article><article class="sol"><img src="/img/s_hwacha.png" alt="Hwacha" loading="lazy" width="150" height="170"><div><h3>Hwacha<span class="cost">300</span></h3><p class="ab">Fires a volley of 8 rocket arrows</p><p class="hi">Hwacha rocket cart, Joseon Korea, used against Japan in the 1590s.</p></div></article></div>
+</div></section>
+<section id="bosses"><div class="wrap">
+ <p class="kicker">Boss battles</p><h2>Giants that carry their own army</h2>
+ <p class="intro">Five bosses arrive last, after the final wave. At half health they throw the fighters riding on their backs onto the field.</p>
+ <div class="bosses"><article class="boss-card"><img src="/img/b_ilghazi.png" alt="Emir Ilghazi" loading="lazy" width="300" height="200"><h3>Emir Ilghazi</h3><p class="era">Didgori, Georgia, 1121</p><p>The Artuqid emir who led the Seljuk coalition against David IV the Builder. He rides an armoured warhorse with two ghulam bodyguards on its back.</p></article><article class="boss-card"><img src="/img/b_bombard.png" alt="Sultan Osman II’s Great Bombard" loading="lazy" width="300" height="200"><h3>Sultan Osman II’s Great Bombard</h3><p class="era">Khotyn, Ukraine, 1621</p><p>The young sultan rode out in person. His giant bronze siege gun rolls forward firing, janissaries riding on the barrel.</p></article><article class="boss-card"><img src="/img/b_aqtank.png" alt="Bin Laden’s Tank" loading="lazy" width="300" height="200"><h3>Bin Laden’s Tank</h3><p class="era">Abbottabad, Pakistan, 2011</p><p>Destroy the tank and Osama bin Laden, leader of al-Qaeda, climbs out of the hatch and runs.</p></article><article class="boss-card"><img src="/img/b_tank.png" alt="ISIS T-55 Tank" loading="lazy" width="300" height="200"><h3>ISIS T-55 Tank</h3><p class="era">Baghuz, Syria, 2019</p><p>A captured tank defends the last stronghold of the self-declared caliphate.</p></article><article class="boss-card"><img src="/img/b_vbied.png" alt="Al-Baghdadi’s Car Bomb" loading="lazy" width="300" height="200"><h3>Al-Baghdadi’s Car Bomb</h3><p class="era">Barisha, Syria, 2019</p><p>The final mission, at night. When the armoured truck falls, Abu Bakr al-Baghdadi, leader of ISIS, runs out in a suicide vest.</p></article></div>
+</div></section>
+<section class="night"><div class="wrap split">
+ <div class="frame"><img src="/img/shot-night.jpg" alt="The night finale at Barisha" loading="lazy" width="1920" height="1200"></div>
+ <div><p class="kicker">Final mission</p><h2>Barisha, 26 October 2019</h2>
+  <p class="intro">The campaign ends at night, under flares and searchlights, with its own opening titles and its own music. The leader of ISIS, Abu Bakr al-Baghdadi, is cornered. Hold every lane and let none escape.</p>
+  <a class="btn small" href="/play">Fight your way there</a></div>
+</div></section>
+<section id="hall" class="band"><div class="wrap">
+ <p class="kicker">Hall of Commanders</p><h2>The best commanders</h2>
+ <p class="intro">Choose a commander name in the game and your score joins the Hall automatically. No account needed. <span id="count"></span></p>
+ <div class="hall"><table><thead><tr><th>#</th><th>Commander</th><th class="n">Battles</th><th class="n hide-s">Bosses</th><th class="n">Score</th></tr></thead><tbody id="hall"><tr><td colspan="5" class="empty">Loading the Hall…</td></tr></tbody></table></div>
+</div></section>
+</main>
+<footer><div class="wrap">
+ <div><strong style="font-family:Rakkas;font-size:22px;color:var(--ink)">CONQUEST</strong><br>A tower-defence game about real battles, 722–2019.</div>
+ <div style="max-width:520px">Battles, commanders and dates follow the historical record. The game mixes eras on purpose: a Roman legionary can stand next to a Korean rocket cart.</div>
+ <div><a class="btn small" href="/play">Play</a></div>
+</div></footer>
+<script>
+(function(){
+ var d=document.getElementById('dust');if(d&&!matchMedia('(prefers-reduced-motion: reduce)').matches){for(var i=0;i<34;i++){var s=document.createElement('i');s.style.top=(Math.random()*100)+'vh';s.style.opacity=(.25+Math.random()*.6).toFixed(2);s.style.animationDuration=(9+Math.random()*16)+'s';s.style.animationDelay=(-Math.random()*25)+'s';d.appendChild(s);}}
+ var SB='https://ezlzpvdqboncsybkvpbd.supabase.co/rest/v1/rpc/',K='sb_publishable_iAvwhKJ40w1mqM_HCwX0RA_we56YWZI';
+ function rpc(f,a){return fetch(SB+f,{method:'POST',headers:{apikey:K,'Content-Type':'application/json'},body:JSON.stringify(a||{})}).then(function(r){return r.ok?r.json():null}).catch(function(){return null});}
+ function esc(s){return String(s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]});}
+ var tb=document.getElementById('hall');
+ rpc('conquest_top',{p_limit:20}).then(function(r){
+  if(!r){tb.innerHTML='<tr><td colspan="5" class="empty">The Hall is out of reach right now. Try again in a moment.</td></tr>';return;}
+  if(!r.length){tb.innerHTML='<tr><td colspan="5" class="empty">No commanders yet. Win a battle, choose a name, and be the first.</td></tr>';return;}
+  tb.innerHTML=r.map(function(x){return '<tr><td>'+x.rank+'</td><td>'+esc(x.name)+'</td><td class="n">'+x.battles_won+'</td><td class="n hide-s">'+x.bosses+'</td><td class="n">'+x.score+'</td></tr>';}).join('');});
+ rpc('conquest_count').then(function(n){if(typeof n==='number'&&n>0)document.getElementById('count').textContent=n+(n===1?' commander has':' commanders have')+' joined so far.';});
+})();
+</script>
+</body>
+</html>
