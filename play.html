@@ -1784,12 +1784,14 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261119-110323';
-const UPD={ready:false,going:false};
-function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD)UPD.ready=true;}).catch(()=>{});}catch(e){}}
-function applyUpdate(){if(UPD.going)return;UPD.going=true;const done=()=>setTimeout(()=>location.reload(),350);
-  try{doBackup(true);}catch(e){}
-  try{if(navigator.serviceWorker)navigator.serviceWorker.getRegistration().then(r=>r?r.update():null).catch(()=>{}).then(done,done);else done();}catch(e){done();}}
+const BUILD='20261119-110640';
+const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
+function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
+function applyUpdate(){if(UPD.going)return;UPD.going=true;
+  /* never wait on anything: reload within 1.5 s no matter what, to a fresh URL so no cache can hand back the old page */
+  let gone=false;const go=()=>{if(gone)return;gone=true;try{sessionStorage.setItem('cq_upd',UPD.want||'');}catch(e){}location.replace('/play?source=app&v='+encodeURIComponent(UPD.want||Date.now()));};
+  try{doBackup(true);}catch(e){}setTimeout(go,1500);
+  try{navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r&&r.update()).catch(()=>{}).then(()=>setTimeout(go,300));}catch(e){}}
 setTimeout(checkUpdate,2500);setInterval(checkUpdate,5*60*1000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkUpdate();});
 addEventListener('pageshow',e=>{if(e.persisted)checkUpdate();});
