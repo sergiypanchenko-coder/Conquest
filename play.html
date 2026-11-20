@@ -1200,7 +1200,7 @@ const BGC={};
 let KIT=null,KITGEO=false;
 function kitFor(L,tk){if(L.ch===5)return'modern';return{desert:'ruins',dusk:'ruins',coast:'ruins',coastRock:'ruins',grass:'village',marsh:'village',mountain:'highland',mountGreen:'highland',steppe:'camp',olive:'camp',burnt:'camp',naval:'harbor'}[tk]||'ruins';}
 /* painted terrain: hand-painted field (9x5 tiles) and enemy-side scenery strip per environment */
-const PTS={desert:{n:'desert',p:'ABCDEG',cf:.62,ct:.058,dm:.7,er:.9},coast:{n:'coast',p:'ABCDEG',cf:.62,ct:.022,dm:.663,er:.441},coastRock:{n:'malta',p:'ABCDEG',cf:.73,ct:.12,dm:.66,er:.68},mountain:{n:'mount',p:'ABCDEG',cf:.58,ct:.184,dm:.768,er:.56},mountGreen:{n:'mossy',p:'ABCDEG',cf:.6,ct:.155,dm:.69,er:.39},grass:{n:'meadow',p:'ABCDEG',cf:.7,ct:.106,dm:.66,er:.74},marsh:{n:'marsh',p:'ABCDEG',cf:.7,ct:.098,dm:.6,er:.62},steppe:{n:'steppe',p:'ABCDEG',cf:.5,ct:.043,dm:.77,er:.54},burnt:{n:'burnt',p:'ABCDEG',cf:.74,ct:.106,dm:.77,er:.79},olive:{n:'olive',p:'ABCDEG',cf:.72,ct:.023,dm:.73,er:.53},town:{n:'town',p:'ABCDEG',cf:.68,ct:.175,dm:.76,er:.6},naval:{n:'sea',p:'ABCDEG',cf:.55,ct:.062,dm:.75,er:.87},dusk:{n:'dusk',p:'BCDEG',cf:.62,ct:.058,dm:.7,er:.99}},PTI={};
+const PTS={desert:{n:'desert',p:'ABCDEG',cf:.62,ct:.058,dm:.7,er:.9},coast:{n:'coast',p:'ABCDEG',cf:.62,ct:.022,dm:.663,er:.441},coastRock:{n:'malta',p:'ABCDEG',cf:.73,ct:.12,dm:.66,er:.68},mountain:{n:'mount',p:'ABCDEG',cf:.58,ct:.184,dm:.768,er:.56},mountGreen:{n:'mossy',p:'ABCDEG',cf:.6,ct:.155,dm:.69,er:.39},grass:{n:'meadow',p:'ABCDEG',cf:.7,ct:.106,dm:.66,er:.74},marsh:{n:'marsh',p:'ABCDEG',cf:.7,ct:.098,dm:.6,er:.62},steppe:{n:'steppe',p:'ABCDEG',cf:.5,ct:.043,dm:.77,er:.54},burnt:{n:'burnt',p:'ABCDEG',cf:.74,ct:.106,dm:.77,er:.79},olive:{n:'olive',p:'ABCDEG',cf:.72,ct:.023,dm:.73,er:.53},town:{n:'town',p:'ABCDEG',cf:.68,ct:.175,dm:.76,er:.6},naval:{n:'sea',p:'ABCDEGK',cf:.55,ct:.062,dm:.75,er:.87},dusk:{n:'dusk',p:'BCDEG',cf:.5,ct:.014,dm:.78,er:.99}},PTI={};
 for(const k in PTS){PTI[k]={};for(const x of PTS[k].p){const im=new Image();im.onload=()=>{for(const q in BGC)delete BGC[q];};im.src='img/terrain/'+PTS[k].n+x+'.webp';PTI[k][x]=im;}}
 function ptFor(kind,kit){const p=kit==='modern'&&kind!=='olive'?PTI.town:PTI[kind];if(!p)return null;return Object.values(p).every(i=>i.complete&&i.naturalWidth)?p:null;}
 function getBG(L){const tk=L.terrain||TERR[L.i]||'desert',kt=kitFor(L,tk),key=tk+'_'+kt+(ptFor(tk,kt)?'P':'')+(L.name==='Didgori'?'G':'')+'_'+L.water.join('')+'_'+W+'x'+H;if(!BGC[key]){KIT=kt;KITGEO=false;BGC[key]=buildBG(tk,L.water);}return BGC[key];}
@@ -1413,6 +1413,7 @@ function buildBG(kind,water){const PTW=ptFor(kind,KIT)||{};const T=TERRAIN[kind]
     if(P.D){const d=P.D,dw=W,dh=nh(d)*dw/nw(d),dy=gy1+2-M.dm*dh;g.save();clipOut();g.drawImage(d,0,dy,dw,dh);g.restore();}
     /* the field itself */
     {const SA=PTI.naval&&PTI.naval.A;if(SA&&SA.complete&&SA.naturalWidth&&water.length){g.save();g.beginPath();water.forEach(r=>g.rect(LEFT-2,TOP+r*CH,COLS*CW+4,CH));g.clip();g.drawImage(SA,LEFT-2,TOP,COLS*CW+4,HH);g.restore();}}
+    if(P.K&&T.deck){g.save();g.beginPath();for(let r=0;r<ROWS;r++)if(!wet(r))g.rect(LEFT-2,TOP+r*CH,COLS*CW+4,CH);g.clip();g.shadowColor='rgba(20,30,40,.5)';g.shadowBlur=8;g.shadowOffsetY=3;g.drawImage(P.K,LEFT-2,TOP,COLS*CW+4,HH);g.restore();}
     if(P.A&&kind!=='naval'){g.save();g.beginPath();for(let r=0;r<ROWS;r++)if(landRow(r))g.rect(LEFT-2,TOP+r*CH,COLS*CW+4,CH);g.clip();g.shadowColor='rgba(40,20,5,.45)';g.shadowBlur=8;g.shadowOffsetX=3;g.shadowOffsetY=3;
     g.drawImage(P.A,LEFT-2,TOP,COLS*CW+4,HH);g.restore();}
     /* the enemy side, wholly beside the field */
@@ -2453,7 +2454,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261120-165251';
+const BUILD='20261120-191620';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
