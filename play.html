@@ -1200,7 +1200,7 @@ const BGC={};
 let KIT=null,KITGEO=false;
 function kitFor(L,tk){if(L.ch===5)return'modern';return{desert:'ruins',dusk:'ruins',coast:'ruins',coastRock:'ruins',grass:'village',marsh:'village',mountain:'highland',mountGreen:'highland',steppe:'camp',olive:'camp',burnt:'camp',naval:'harbor'}[tk]||'ruins';}
 /* painted terrain: hand-painted field (9x5 tiles) and enemy-side scenery strip per environment */
-const PTS={desert:{n:'desert',p:'ABCDEG',cf:.62,ct:.058,dm:.7},coastRock:{n:'malta',p:'ABG',x0:.011},mountain:{n:'mount',p:'ABG',x0:.212},mountGreen:{n:'mossy',p:'A'}},PTI={};
+const PTS={desert:{n:'desert',p:'ABCDEG',cf:.62,ct:.058,dm:.7,er:.9},coast:{n:'coast',p:'BCDEG',cf:.62,ct:.022,dm:.663,er:.441},coastRock:{n:'malta',p:'ABG',x0:.011},mountain:{n:'mount',p:'ABG',x0:.212},mountGreen:{n:'mossy',p:'A'}},PTI={};
 for(const k in PTS){PTI[k]={};for(const x of PTS[k].p){const im=new Image();im.onload=()=>{for(const q in BGC)if(q.startsWith(k+'_'))delete BGC[q];};im.src='img/terrain/'+PTS[k].n+x+'.webp';PTI[k][x]=im;}}
 function ptFor(kind,kit){const p=PTI[kind];if(!p||kit==='modern')return null;return Object.values(p).every(i=>i.complete&&i.naturalWidth)?p:null;}
 function getBG(L){const tk=L.terrain||TERR[L.i]||'desert',kt=kitFor(L,tk),key=tk+'_'+kt+(ptFor(tk,kt)?'P':'')+(L.name==='Didgori'?'G':'')+'_'+L.water.join('')+'_'+W+'x'+H;if(!BGC[key]){KIT=kt;KITGEO=false;BGC[key]=buildBG(tk,L.water);}return BGC[key];}
@@ -1402,7 +1402,7 @@ function buildBG(kind,water){const PTW=ptFor(kind,KIT)||{};const T=TERRAIN[kind]
   else if(kit==='harbor')slots.forEach(([x,y,k])=>{add(y,()=>k%2?crate(x-11*SS,y,SS):post(x,y,SS));});
   D.sort((a,b)=>a[0]-b[0]).forEach(d=>d[1]());}
   }
-  if(PTW.A){const P=PTW,M=PTS[kind],nw=i=>i.naturalWidth,nh=i=>i.naturalHeight,gy1=TOP+HH;
+  if(PTW.A||PTW.B){const P=PTW,M=PTS[kind],nw=i=>i.naturalWidth,nh=i=>i.naturalHeight,gy1=TOP+HH;
     const clipOut=()=>{g.beginPath();g.rect(0,0,W,H);g.rect(LEFT-2,TOP,COLS*CW+4,HH);g.clip('evenodd');};
     /* ground all around the field, cut from the painting itself */
     if(P.G){const fg=P.G,gp=g.createPattern(fg,'repeat');try{gp.setTransform(new DOMMatrix().scale(260/nw(fg)));}catch(e){}
@@ -1413,13 +1413,13 @@ function buildBG(kind,water){const PTW=ptFor(kind,KIT)||{};const T=TERRAIN[kind]
     /* in front of the field: the bottom part, its low middle just under the last row */
     if(P.D){const d=P.D,dw=W,dh=nh(d)*dw/nw(d),dy=gy1+2-M.dm*dh;g.save();clipOut();g.drawImage(d,0,dy,dw,dh);g.restore();}
     /* the field itself */
-    g.save();g.beginPath();for(let r=0;r<ROWS;r++)if(landRow(r))g.rect(LEFT-2,TOP+r*CH,COLS*CW+4,CH);g.clip();g.shadowColor='rgba(40,20,5,.45)';g.shadowBlur=8;g.shadowOffsetX=3;g.shadowOffsetY=3;
-    g.drawImage(P.A,LEFT-2,TOP,COLS*CW+4,HH);g.restore();
+    if(P.A){g.save();g.beginPath();for(let r=0;r<ROWS;r++)if(landRow(r))g.rect(LEFT-2,TOP+r*CH,COLS*CW+4,CH);g.clip();g.shadowColor='rgba(40,20,5,.45)';g.shadowBlur=8;g.shadowOffsetX=3;g.shadowOffsetY=3;
+    g.drawImage(P.A,LEFT-2,TOP,COLS*CW+4,HH);g.restore();}
     /* the enemy side, wholly beside the field */
     if(P.B){const fb=P.B,x0=M.x0||0,s=Math.min((W-gx-4)/(nw(fb)*(1-x0)),H/nh(fb)),sw=nw(fb)*s,sh=nh(fb)*s;g.save();g.beginPath();g.rect(gx,0,W-gx,H);g.clip();g.drawImage(fb,W-sw,H-sh,sw,sh);g.restore();
       const eg=g.createLinearGradient(gx,0,gx+18,0);eg.addColorStop(0,'rgba(50,28,8,.3)');eg.addColorStop(1,'rgba(50,28,8,0)');g.fillStyle=eg;g.fillRect(gx,TOP,18,HH);}
     /* our side: the castle wall */
-    if(P.E){const fe=P.E,eh=H,ew=nw(fe)*eh/nh(fe);g.save();g.beginPath();g.rect(0,0,LEFT-2,H);g.clip();g.drawImage(fe,LEFT+16-ew,0,ew,eh);g.restore();}}
+    if(P.E){const fe=P.E,eh=H,ew=nw(fe)*eh/nh(fe);g.save();g.beginPath();g.rect(0,0,LEFT-2,H);g.clip();g.drawImage(fe,LEFT+16-ew*(M.er||1),0,ew,eh);g.restore();}}
   /* scenery beyond the battle line */
   const edgeX=T.sea?seaX-18:W-30;
   if(T.trees&&false){for(let r=0;r<ROWS;r++){if(!landRow(r))continue;const n=Math.max(1,Math.round((T.treeN||3)/3));for(let k=0;k<n;k++){const x=Math.min(edgeX,gx+14+R()*(Math.max(20,W-gx-40))),y=TOP+r*CH+30+R()*(CH-34);if(x>gx+6)tree(x,y,.75+R()*.25,T.trees);}}}
@@ -2453,7 +2453,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261120-140808';
+const BUILD='20261120-140946';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
