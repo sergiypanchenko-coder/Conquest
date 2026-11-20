@@ -19,7 +19,7 @@
    PICTURE: the battlefield itself, lanes, wall, cannons, soldiers
    COLOUR and TYPE: parchment, oxblood, gold; Cinzel for titles
    LAYOUT: full-screen canvas, scaled to fit, landscape-first */
-html,body{margin:0;height:100%;background:#c98a4b;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
+html,body{margin:0;height:100%;background:#1e1208;overflow:hidden;touch-action:none;-webkit-user-select:none;user-select:none}
 #wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
 canvas{display:block}
 #rot{position:fixed;bottom:10px;left:0;right:0;text-align:center;color:#4a240c;font:600 14px 'El Messiri',Georgia,serif;opacity:.85;pointer-events:none}
@@ -40,8 +40,9 @@ function gfxLabel(){return'Graphics: '+{auto:'Auto',sharp:'Sharp',smooth:'Smooth
 function toggleGfx(){GFX={auto:'sharp',sharp:'smooth',smooth:'auto'}[GFX]||'auto';QUAL=1;try{localStorage.setItem('conquest_gfx',GFX);}catch(e){}resize();}
 try{document.fonts&&document.fonts.ready.then(()=>{try{BTNC.clear();CARDC.clear();HUDC=null;MAPC=null;MAPOV=null;}catch(e){}});}catch(e){}
 function resize(){const iw=innerWidth,ih=innerHeight,dr=Math.min(window.__DPR||window.devicePixelRatio||1,2),d=GFX==='sharp'?dr:GFX==='smooth'?Math.min(dr,1):Math.max(Math.min(dr,1.25),Math.min(dr,Math.sqrt(3200000/(iw*ih)))*QUAL),a=Math.max(1,Math.min(2.4,iw/ih)),oW=W,oH=H,oCW=CW,oCH=CH;
-  if(a>=1.6){H=600;W=Math.round(600*a);}else{W=960;H=Math.round(960/a);}
-  CW=Math.min(104,(W-LEFT-160)/COLS);CH=(H-TOP-24)/ROWS;KX=CW/90;S=Math.min(iw/W,ih/H);
+  /* one fixed ratio everywhere, so the battle tiles are always square */
+  H=600;W=1280;
+  CW=104;CH=104;KX=CW/90;S=Math.min(iw/W,ih/H);
   cv.style.width=W*S+'px';cv.style.height=H*S+'px';cv.width=Math.round(W*S*d);cv.height=Math.round(H*S*d);ctx.setTransform(S*d,0,0,S*d,0,0);
   if(oW!==W||oH!==H){try{MAPC=null;}catch(e){}try{relayout(oCW,oCH);}catch(e){}}}
 addEventListener('resize',resize);resize();try{new ResizeObserver(resize).observe(document.documentElement);}catch(e){}setInterval(()=>{if(Math.abs(cv.clientWidth-innerWidth)>2&&Math.abs(cv.clientHeight-innerHeight)>2)resize();},700);
@@ -1199,8 +1200,8 @@ const BGC={};
 let KIT=null,KITGEO=false;
 function kitFor(L,tk){if(L.ch===5)return'modern';return{desert:'ruins',dusk:'ruins',coast:'ruins',coastRock:'ruins',grass:'village',marsh:'village',mountain:'highland',mountGreen:'highland',steppe:'camp',olive:'camp',burnt:'camp',naval:'harbor'}[tk]||'ruins';}
 /* painted terrain: hand-painted field (9x5 tiles) and enemy-side scenery strip per environment */
-const PTS={desert:['img/terrain/desertA.webp','img/terrain/desertB.webp']},PTI={};
-for(const k in PTS)PTI[k]=PTS[k].map(u=>{const im=new Image();im.onload=()=>{for(const q in BGC)if(q.startsWith(k+'_'))delete BGC[q];};im.src=u;return im;});
+const PTS={desert:['desert'],coastRock:['malta']},PTI={};
+for(const k in PTS)PTI[k]=['A','B','P'].map(x=>'img/terrain/'+PTS[k][0]+x+'.webp').map(u=>{const im=new Image();im.onload=()=>{for(const q in BGC)if(q.startsWith(k+'_'))delete BGC[q];};im.src=u;return im;});
 function ptFor(kind,kit){const p=PTI[kind];if(!p||kit==='modern')return null;return p.every(i=>i.complete&&i.naturalWidth)?p:null;}
 function getBG(L){const tk=L.terrain||TERR[L.i]||'desert',kt=kitFor(L,tk),key=tk+'_'+kt+(ptFor(tk,kt)?'P':'')+(L.name==='Didgori'?'G':'')+'_'+L.water.join('')+'_'+W+'x'+H;if(!BGC[key]){KIT=kt;KITGEO=false;BGC[key]=buildBG(tk,L.water);}return BGC[key];}
 function buildBG(kind,water){const T=TERRAIN[kind]||TERRAIN.desert,K=2,c=document.createElement('canvas');c.width=W*K;c.height=H*K;const g=c.getContext('2d');g.scale(K,K);
@@ -1401,9 +1402,9 @@ function buildBG(kind,water){const T=TERRAIN[kind]||TERRAIN.desert,K=2,c=documen
   else if(kit==='harbor')slots.forEach(([x,y,k])=>{add(y,()=>k%2?crate(x-11*SS,y,SS):post(x,y,SS));});
   D.sort((a,b)=>a[0]-b[0]).forEach(d=>d[1]());}
   }
-  {const PTX=ptFor(kind,KIT);if(PTX){const[fa,fb]=PTX,sh=H*1.02,sw=fb.naturalWidth*sh/fb.naturalHeight;g.drawImage(fb,W-sw+6,H-sh+4,sw,sh);
+  {const PTX=ptFor(kind,KIT);if(PTX){const[fa,fb,fp]=PTX,sh=H*.86,sw=fb.naturalWidth*sh/fb.naturalHeight,sx=W-sw,sy=H-sh;g.save();g.beginPath();g.rect(gx,0,W-gx,TOP);g.rect(gx,TOP+HH,W-gx,H-TOP-HH);for(let r=0;r<ROWS;r++)if(landRow(r))g.rect(gx,TOP+r*CH,W-gx,CH);g.clip();g.drawImage(fb,sx,sy,sw,sh);g.restore();
     g.save();g.beginPath();for(let r=0;r<ROWS;r++)if(landRow(r))g.rect(LEFT-2,TOP+r*CH,COLS*CW+4,CH);g.clip();g.shadowColor='rgba(40,20,5,.45)';g.shadowBlur=8;g.shadowOffsetX=3;g.shadowOffsetY=3;
-    g.drawImage(fa,LEFT-2,TOP,COLS*CW+4,ROWS*CH);g.restore();}}
+    g.drawImage(fa,LEFT-2,TOP,COLS*CW+4,ROWS*CH);g.restore();g.drawImage(fp,sx,sy,sw,sh);}}
   /* scenery beyond the battle line */
   const edgeX=T.sea?seaX-18:W-30;
   if(T.trees&&false){for(let r=0;r<ROWS;r++){if(!landRow(r))continue;const n=Math.max(1,Math.round((T.treeN||3)/3));for(let k=0;k<n;k++){const x=Math.min(edgeX,gx+14+R()*(Math.max(20,W-gx-40))),y=TOP+r*CH+30+R()*(CH-34);if(x>gx+6)tree(x,y,.75+R()*.25,T.trees);}}}
@@ -2439,7 +2440,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261120-133718';
+const BUILD='20261120-134144';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
