@@ -1,7 +1,7 @@
 /* Conquest offline cache: the game and site work without a connection after the first visit.
    Pages: network first with a short timeout, then the cached copy (never a blank screen).
    Images, icons, fonts: cache first. Supabase, music and version checks are never cached. */
-const V='conquest-v10';
+const V='conquest-v11';
 const CORE=['/','/play','/favicon.svg','/manifest.webmanifest','/icons/icon-192.png','/icons/icon-512.png'];
 /* Android refuses to show a page if the service worker hands it a "redirected" response, so store clean copies */
 const clean=res=>res.redirected?res.blob().then(b=>new Response(b,{status:res.status,statusText:res.statusText,headers:res.headers})):Promise.resolve(res);
