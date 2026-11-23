@@ -2514,21 +2514,33 @@ function rigDraw(type,x,y,t,o){const R=RIG[type],P=R.P,a=o.a||0,p=1-a,lv=o.lv|0,
     else if(p<.66){const k=ease((p-.38)/.28);hand=lerp2(Q,RT,k);held=false;arrow=true;arAng=lerp(-2.0,0,k);vib=0;}
     else{const k=ease((p-.66)/.34);hand=lerp2(RT,P.nock,k);held=true;arrow=true;pull=Math.min(1,(p-.66)/.12);}}
   else{hand=[P.nock[0]+Math.sin(t*23)*1.5,P.nock[1]+Math.sin(t*17)*1];}
-  const bt=rot2(P.top,P.B,bowA),bb=rot2(P.bot,P.B,bowA);
-  D('body');
+  /* bow tension (1 = fully drawn), body lean (px at the top of the head) and recoil */
+  let ten=1,lean=Math.sin(t*1.3)*5,rec=0;
+  if(a>0){if(p<.66){const q=p;ten=Math.exp(-q*9)*Math.cos(q*34);lean+=18*Math.exp(-q*7)*Math.sin(Math.min(1,q/.08)*PI/2);rec=-12*Math.exp(-q*14)*(q<.02?q/.02:1);}
+    else{const k=ease((p-.66)/.34);ten=k;lean-=16*Math.sin(k*PI*.9);}}
+  const GRIP=540,flex=y=>46*(1-ten)*Math.pow(Math.abs(y-GRIP)/510,2);
+  const FY=R.feet[1],off=y=>lean*Math.pow(Math.max(0,(FY-y)/1250),1.3)+rec,offS=off(P.S[1]);
+  const bt=rot2([P.top[0]+flex(P.top[1]),P.top[1]],P.B,bowA),bb=rot2([P.bot[0]+flex(P.bot[1]),P.bot[1]],P.B,bowA);
+  /* body bends from the hips: drawn in bands, each shifted a little more towards the top */
+  {const q=R.parts.body,img=rigPart(type,'body',lv),N=8,iw=img.width||img.naturalWidth,ih=img.height||img.naturalHeight;for(let i=0;i<N;i++){const y0=q[1]+q[3]*i/N,y1=q[1]+q[3]*(i+1)/N,o0=off(y1),o1=off(y0),c=(o1-o0)/(y0-y1);
+    ctx.save();ctx.transform(1,0,c,1,o0-c*y1,0);ctx.drawImage(img,0,ih*i/N,iw,ih/N+1,q[0],y0,q[2],q[3]/N+1);ctx.restore();}}
+  ctx.save();ctx.translate(offS,0);
   /* arrow */
   if(arrow){const dir=Math.atan2(P.tip[1]-P.nock[1],P.tip[0]-P.nock[0])+(arAng||0),L=Math.hypot(P.tip[0]-P.nock[0],P.tip[1]-P.nock[1]);ctx.save();ctx.translate(hand[0],hand[1]);ctx.rotate(dir);
     ctx.lineCap='round';ctx.strokeStyle='#2a1406';ctx.lineWidth=17;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(L-70,0);ctx.stroke();ctx.strokeStyle='#c98a4a';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(L-72,0);ctx.stroke();
     ctx.fillStyle='#b8bec6';ctx.strokeStyle='#2a1406';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(L,0);ctx.lineTo(L-80,-28);ctx.lineTo(L-66,0);ctx.lineTo(L-80,28);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.moveTo(L-8,-2);ctx.lineTo(L-70,-20);ctx.lineTo(L-62,-4);ctx.fill();
     ctx.fillStyle='#f4f0e6';ctx.lineWidth=5;for(const s of[-1,1]){ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(30,s*34);ctx.lineTo(95,s*30);ctx.lineTo(86,0);ctx.closePath();ctx.fill();ctx.stroke();}ctx.restore();}
   /* bow arm */
-  ctx.save();ctx.translate(P.B[0],P.B[1]);ctx.rotate(bowA);ctx.translate(-P.B[0],-P.B[1]);D('bow');ctx.restore();
+  ctx.save();ctx.translate(P.B[0],P.B[1]);ctx.rotate(bowA);ctx.translate(-P.B[0],-P.B[1]);
+  {const q=R.parts.bow,img=rigPart(type,'bow',lv),N=14,iw=img.width||img.naturalWidth,ih=img.height||img.naturalHeight;for(let i=0;i<N;i++){const y0=q[1]+q[3]*i/N,y1=q[1]+q[3]*(i+1)/N,o0=flex(y1),o1=flex(y0),c=(o1-o0)/(y0-y1);
+    ctx.save();ctx.transform(1,0,c,1,o0-c*y1,0);ctx.drawImage(img,0,ih*i/N,iw,ih/N+1,q[0],y0,q[2],q[3]/N+1);ctx.restore();}}
+  ctx.restore();
   /* string: bent to the hand while held, straight and humming when loose */
   const rest=lerp2(bt,bb,.455),sp=held?lerp2(rest,hand,pull):rest,wob=vib>0?Math.sin(t*90)*vib*16:0;ctx.lineCap='round';
   for(const [w,c] of[[13,'#2a1406'],[5,'#f0dcb0']]){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(bt[0],bt[1]);if(held&&pull>=1){ctx.lineTo(sp[0],sp[1]);ctx.lineTo(bb[0],bb[1]);}else{const cx=held?sp[0]*2-(bt[0]+bb[0])/2:sp[0]+wob,cy=held?sp[1]*2-(bt[1]+bb[1])/2:sp[1];ctx.quadraticCurveTo(cx,cy,bb[0],bb[1]);}ctx.stroke();}
   /* drawing arm: shoulder and elbow turn so the hand reaches its target */
   const K=ik2(P.S,P.E,P.nock,hand);ctx.save();ctx.translate(P.S[0],P.S[1]);ctx.rotate(K.d1);ctx.translate(-P.S[0],-P.S[1]);D('upper');ctx.translate(P.E[0],P.E[1]);ctx.rotate(K.d2);ctx.translate(-P.E[0],-P.E[1]);D('fore');ctx.restore();
-  ctx.filter='none';ctx.restore();}
+  ctx.restore();ctx.filter='none';ctx.restore();}
 
 function uDraw(type,x,y,t,o){if(RIG[type]&&rigReady(type)){rigDraw(type,x,y,t,o);return;}const M=USPR[type],kind=M[5],a=o.a||0,S=o.scale||1,lv=o.lv|0,base=uBase(type,lv),H=M[4],Wd=H*M[0],fx=M[1]*Wd;
   const P=uPose(kind,t,a,o);ctx.save();ctx.translate(x,y);ctx.scale(S,S);if(o.flip)ctx.scale(-1,1);if(o.alpha!=null)ctx.globalAlpha*=o.alpha;
@@ -2691,7 +2703,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261123-170016';
+const BUILD='20261123-170640';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
