@@ -1456,7 +1456,10 @@ let FOGV=null;function fogVeil(){const key=W+'x'+H;if(FOGV&&FOGV.key===key)retur
 function fogLayer(){const t=G.t||0,fs=fogSprite();ctx.save();ctx.drawImage(fogVeil(),0,0,W,H);
   for(let i=0;i<11;i++){const sp=6+(i%4)*3,x=((i*197+t*sp)%(W+600))-300,y=((i*83)%H)+Math.sin(t*.2+i)*14,rx=220+(i%3)*90,ry=70+(i%4)*22;ctx.globalAlpha=.32+.12*Math.sin(t*.15+i*1.7);ctx.drawImage(fs,x-rx,y-ry,rx*2,ry*2);}
   ctx.restore();}
-function drawField(L){ctx.drawImage(getBG(L),0,0,W,H);cloudShadows(L);try{wxSkyGround();ambient(L);}catch(e){}
+function bgWaiting(L){const tk=L.terrain||TERR[L.i]||'desert',kt=kitFor(L,tk),k2=kt==='modern'&&tk!=='olive'?'town':tk;if(!PTS[k2])return false;
+  if(ptFor(tk,kt)){G.bgWaitT=0;return false;}G.bgWaitT=(G.bgWaitT||0)+1/60;return G.bgWaitT<10;}
+function drawField(L){if(bgWaiting(L)){ctx.fillStyle='#1e1208';ctx.fillRect(0,0,W,H);const k=.5+.5*Math.sin(performance.now()/250);ctx.globalAlpha=.5+.5*k;otxt('Preparing the battlefield…',W/2,H/2,26,'#f6dc96','rgba(30,14,2,.9)',5,TF);ctx.globalAlpha=1;return;}
+  ctx.drawImage(getBG(L),0,0,W,H);cloudShadows(L);try{wxSkyGround();ambient(L);}catch(e){}
   L.water.forEach(r=>{const yy=TOP+r*CH;ctx.save();ctx.beginPath();ctx.rect(L.deckK?LEFT+L.deckK*CW:0,yy+8,W,CH-16);ctx.clip();ctx.globalCompositeOperation='screen';
     for(let i=0;i<30;i++){const x=((i*83+G.t*(9+(i%4)*4))%(W+60))-30,y=yy+12+((i*37)%(CH-24)),a=.06+.06*Math.sin(G.t*2+i);ctx.strokeStyle='rgba(220,250,255,'+a+')';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+12,y-2+Math.sin(G.t*3+i)*1.5,x+26,y);ctx.stroke();}ctx.restore();});}
 
@@ -2542,6 +2545,7 @@ function rigDraw(type,x,y,t,o){const R=RIG[type],P=R.P,a=o.a||0,p=1-a,lv=o.lv|0,
   const K=ik2(P.S,P.E,P.nock,hand);ctx.save();ctx.translate(P.S[0],P.S[1]);ctx.rotate(K.d1);ctx.translate(-P.S[0],-P.S[1]);D('upper');ctx.translate(P.E[0],P.E[1]);ctx.rotate(K.d2);ctx.translate(-P.E[0],-P.E[1]);D('fore');ctx.restore();
   ctx.restore();ctx.filter='none';ctx.restore();}
 
+setTimeout(()=>{for(const k in PTS)ptLoad(k);for(const k in USPR)uImg(k);for(const k in RIG)for(const n in RIG[k].parts)rigImg(k,n);},0);
 function uDraw(type,x,y,t,o){if(RIG[type]&&rigReady(type)){rigDraw(type,x,y,t,o);return;}const M=USPR[type],kind=M[5],a=o.a||0,S=o.scale||1,lv=o.lv|0,base=uBase(type,lv),H=M[4],Wd=H*M[0],fx=M[1]*Wd;
   const P=uPose(kind,t,a,o);ctx.save();ctx.translate(x,y);ctx.scale(S,S);if(o.flip)ctx.scale(-1,1);if(o.alpha!=null)ctx.globalAlpha*=o.alpha;
   ctx.translate(P.dx,P.dy);if(P.rot)ctx.rotate(P.rot);ctx.scale(P.sx,P.sy);
@@ -2703,7 +2707,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261123-170640';
+const BUILD='20261123-174009';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
@@ -2722,7 +2726,7 @@ function frame(now){try{musicFrame();}catch(e){}const rawDt=(now-last)/1000;let 
   if(G.state==='cut'){drawCut(dt);}
   else if(G.state==='menu'){if((G.t||0)-ONLINE.loadedAt>30||G.justBack){G.justBack=0;loadOnline();}drawMenu();atmos(.8);if(G.hall){G.btns=[];drawHall();}else if(G.bk){G.btns=[];drawBackup();}else if(G.army){G.btns=[];drawArmy();}else if(G.films){G.btns=[];drawFilms();}}
   else if(G.state==='prep'){updatePrep(dt);drawPrep();if(G.L.name==='Didgori')fogLayer();atmos(fieldAtmos(G.L,.7));if(G.L.final&&FIN_T>=0&&FIN_T<9)finaleCard();if(G.phase==='scout')G.btns=[{x:0,y:0,w:W,h:H,fn:()=>{if(G.L.final&&FIN_T>=0&&FIN_T<9){FIN_T=9;return;}G.phase='pick';G.pt=0;}}];}
-  else{if(G.state==='play')stepWarm(2);if(G.state==='play'&&!G.paused){if(G.slowmo>0)update(dt*.25);else for(let i=0;i<G.speed;i++)update(dt);}
+  else{if(G.state==='play')stepWarm(2);if(G.state==='play'&&!G.paused&&!(G.L&&bgWaiting(G.L))){if(G.slowmo>0)update(dt*.25);else for(let i=0;i<G.speed;i++)update(dt);}
     drawGame();if(!(G.L&&G.L.night))atmos(fieldAtmos(G.L,.55));G.btns=G.state==='play'&&!G.paused?G.btns:[];
     if(G.paused){overlay('Paused','The enemy waits for no one.','Resume',()=>{G.paused=false;});ibtn(W-32,128,'sound',SOUND?'Sound':'Muted',toggleSound,{off:!SOUND});ibtn(W-32,196,'music',MUSIC?'Music':'No music',toggleMusic,{off:!MUSIC});ibtn(W-32,264,'gfx',gfxLabel().replace(/^Graphics:\s*/,''),toggleGfx);}
     if(G.state==='win'&&G.L.final){drawFinale();}
