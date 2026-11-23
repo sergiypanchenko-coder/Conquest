@@ -1000,6 +1000,9 @@ const LEVELS_=[
  LV(5,'Barisha','Kayla Mueller raid: Abu Bakr al-Baghdadi, leader of ISIS, 2019',[36.17,36.56],['militant','heavy','rpg','moto','technical'],{boss:'vbied',final:1,night:1})
 ];
 const LEVELS=LEVELS_;
+LEVELS_.forEach(L=>{if(L.name==='Preveza'){L.water=[0,1,3,4];L.deckK=4;}if(L.name==='Lepanto'){L.water=[0,1,3,4];L.deckK=3;}});
+/* a tile is sea unless it is land, or deck on a naval map */
+function seaAt(r,c){return G.water.includes(r)&&!(G.deckK&&c<G.deckK);}
 /* steady climb: every battle brings more foes than the one before */
 LEVELS.forEach((L,i)=>{L.i=i;L.n=Math.round(14+i*1.8);});
 /* per-battle strength, tuned so every battle can be won and the challenge climbs steadily */
@@ -1018,7 +1021,7 @@ function diff(L){return L.i/(LEVELS.length-1);}
 function waveCount(L){return L.i<2?1:L.i<5?2:L.i<12?3:L.i<22?4:5;}
 function buildSched(L){const s=[],D=diff(L),n=L.n,NW=waveCount(L);let t=20;
   const bigs=[];for(let w=1;w<=NW;w++)bigs.push(w===NW?n-1:Math.floor(n*w/(NW+.5)));
-  const rowFor=ty=>{const ok=[0,1,2,3,4].filter(r=>FOE[ty].water?L.water.includes(r):isLand(ty)?!L.water.includes(r):true);return ok[Math.floor(Math.random()*ok.length)];};
+  const rowFor=ty=>{const ok=[0,1,2,3,4].filter(r=>FOE[ty].water?L.water.includes(r):!L.water.includes(r));return ok[Math.floor(Math.random()*ok.length)];};
   let w=0;
   for(let i=0;i<n;i++){const p=i/n,k=Math.max(1,Math.min(L.foes.length,Math.ceil((p+0.12+D*.2)*L.foes.length)));
     const pick=hard=>L.foes[hard&&Math.random()<.3+D*.3?Math.floor(k/2)+Math.floor(Math.random()*(k-Math.floor(k/2))):Math.floor(Math.random()*k)];
@@ -1037,7 +1040,7 @@ let TUNE=null;function setTune(t){TUNE=t;}
 function startBattle(li){const L=LEVELS[li];menuChap=L.ch;menuSel=li;if(L.final)FIN_T=0;G={state:'prep',phase:'scout',pt:0,info:null,li,L,t:0,time:0,gold:100,sel:null,shovel:false,paused:false,speed:1,
   grid:[...Array(ROWS)].map(()=>Array(COLS).fill(null)),defs:[],foes:[],projs:[],coins:[],parts:[],floats:[],
   cannons:[...Array(ROWS)].map(()=>({s:'ready',x:LEFT-34})),cd:{},sched:buildSched(L),si:0,sky:6,banner:{s:'Hold the line!',t:2.6},shake:0,btns:[],
-  bigTimes:[]};ORDER.forEach(k=>G.cd[k]=0);G.bigTimes=G.sched.filter(e=>e.big).map(e=>G.sched.indexOf(e));Object.assign(G.cd,START_CD);G.pg=0;{const k=(TUNE&&TUNE[L.i])||L.k||1;G.hpm=(1+L.i*.022)*k;G.dmm=(1+L.i*.01)*Math.sqrt(k);}G.lf=[];G.eprojs=[];G.leaves=0;G.leafDrops=[];G.nsp=0;G.leafSel=false;G.rq=[];G.rflash=0;G.flyers=[];G.dead=[];G.storm=L.storm?{t:30,k:0,on:false}:null;G.water=L.water;eraInit();chalInit();G.fires=[];G.kills=0;G.pw={};G.rain=[];G.pwSel=null;G.seen=new Set();G.avail=avail();G.SQ=Math.min(G.avail.filter(k=>k!=='raft').length,li<10?5:li<20?6:7);G.squad=(lastSquad[li]||[]).filter(k=>G.avail.includes(k)).slice(0,G.SQ);}
+  bigTimes:[]};ORDER.forEach(k=>G.cd[k]=0);G.bigTimes=G.sched.filter(e=>e.big).map(e=>G.sched.indexOf(e));Object.assign(G.cd,START_CD);G.pg=0;{const k=(TUNE&&TUNE[L.i])||L.k||1;G.hpm=(1+L.i*.022)*k;G.dmm=(1+L.i*.01)*Math.sqrt(k);}G.lf=[];G.eprojs=[];G.leaves=0;G.leafDrops=[];G.nsp=0;G.leafSel=false;G.rq=[];G.rflash=0;G.flyers=[];G.dead=[];G.storm=L.storm?{t:30,k:0,on:false}:null;G.water=L.water;G.deckK=L.deckK||0;eraInit();chalInit();G.fires=[];G.kills=0;G.pw={};G.rain=[];G.pwSel=null;G.seen=new Set();G.avail=avail();G.SQ=Math.min(G.avail.filter(k=>k!=='raft').length,li<10?5:li<20?6:7);G.squad=(lastSquad[li]||[]).filter(k=>G.avail.includes(k)).slice(0,G.SQ);}
 function avail(){const m=Math.max(G.li||0,unlocked-1);return ORDER.filter(k=>DEFS[k].lvl<=m);}
 
 function puff(x,y,c,n,sp){for(let i=0;i<n;i++){const a=Math.random()*Math.PI*2,v=(sp||80)*(0.3+Math.random());G.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v-30,life:0.5+Math.random()*0.4,c,r:2+Math.random()*3});}}
@@ -1107,7 +1110,7 @@ function update(dt){
     if(p.pierce){p.x+=p.v*dt;G.foes.forEach(e=>{if(e.row===p.row&&!p.pierce.has(e)&&p.x>=e.x-4&&p.x<=e.x+FOE[e.type].w){p.pierce.add(e);hurt(e,p.dmg*(p.bl||1));if(p.stun)e.stun=Math.max(e.stun||0,p.stun);if(p.burn)e.burn=3;}});if(p.x>W+20)G.projs.splice(G.projs.indexOf(p),1);continue;}
     p.x+=p.v*dt;if(p.ty!=null&&p.y!==p.ty){const st=p.v*dt*1.1;p.y=Math.abs(p.ty-p.y)<st?p.ty:p.y+Math.sign(p.ty-p.y)*st;}const e=G.foes.find(e=>e.row===p.row&&e.hp>0&&p.x>=e.x-4&&p.x<=e.x+FOE[e.type].w);
     if(e){hurt(e,p.dmg*(p.bl||1));if(p.slow){e.slow=p.freeze?10:6;if(p.freeze)e.stun=Math.max(e.stun||0,3);puff(p.x,p.y,'#1a1a1a',6,50);}G.projs.splice(G.projs.indexOf(p),1);}else if(p.x>W+20)G.projs.splice(G.projs.indexOf(p),1);}
-  for(const e of G.foes){const F=FOE[e.type];e.t+=dt;e.flash-=dt;if(e.stun>0){e.stun-=dt;e.atk=false;continue;}let blk=null;e.slow=Math.max(0,(e.slow||0)-dt);const sl=e.slow>0?.5:1;e.mf=Math.max(0,(e.mf||0)-dt*2);
+  for(const e of G.foes){const F=FOE[e.type];e.t+=dt;e.flash-=dt;if(e.stun>0){e.stun-=dt;e.atk=false;continue;}if(e.hold){e.atk=false;continue;}let blk=null;e.slow=Math.max(0,(e.slow||0)-dt);const sl=e.slow>0?.5:1;e.mf=Math.max(0,(e.mf||0)-dt*2);
     if(F.riders&&!e.dropped&&e.hp<e.max*.5){e.dropped=1;G.banner={s:'Riders leap from the '+({tank:'tank',aqtank:'tank',vbied:'truck',bombard:'bombard'}[e.type]||'warhorse')+'!',t:2};sfx('horn',0);for(let j=0;j<F.nr;j++)G.flyers.push({type:F.riders,x0:e.x+F.w*.45,y0:rowY(e.row)-130,tx:Math.max(LEFT+30,e.x-(80+j*70)*KX),row:e.row,t:0,dur:1.1+j*.15});}
     for(let c=COLS-1;c>=0;c--){const d=G.grid[e.row][c];if(d&&!hid(d)&&e.x<=d.x+30&&e.x>=d.x-30){blk=d;break;}}
     if(F.launcher&&!blk&&e.x<=LEFT+COLS*CW-40){e.atk=true;e.lt=(e.lt==null?2:e.lt)-dt;if(e.lt<=0){e.lt=6.5;const c=2+Math.floor(Math.random()*4);G.flyers.push({x0:e.x+30,y0:rowY(e.row)-90,tx:colX(c)+10,row:e.row,t:0,dur:1.6});sfx('whoosh');puff(e.x+30,rowY(e.row)-90,'#c9b48a',8,60);}continue;}
@@ -1120,7 +1123,7 @@ function update(dt){
   for(const e of [...G.foes])if(e.hp<=0){const F=FOE[e.type];if(e.type!=='plank')G.kills=(G.kills||0)+1;if(e.leaf||F.boss){G.leafDrops.push({x:e.x+F.w/2,y:rowY(e.row)-50,age:0});if(!G.leafHint){G.leafHint=1;G.banner={s:'A leaf! It flies to your bar — then tap a soldier',t:3};}}if(F.boss){puff(e.x+F.w/2,rowY(e.row)-50,'#ff9a33',30,240);smoke(e.x+F.w/2,rowY(e.row)-60,18,2.6);G.shake=.45;sfx('boom',0);}
     if(F.pilot){const P=FOE[F.pilot];G.foes.push({type:F.pilot,row:e.row,x:e.x+F.w*.4,hp:P.hp*G.hpm,max:P.hp*G.hpm,t:0,flash:0,atk:false});G.banner={s:P.name+' climbs out and runs!',t:2.6};sfx('horn',0);}
     if(e.type==='binladen'){G.banner={s:'Osama bin Laden is dead.',t:4};}
-    if(F.vest){G.banner={s:'Al-Baghdadi sets off his vest!',t:4};puff(e.x+15,rowY(e.row)-40,'#ff9a33',40,300);smoke(e.x,rowY(e.row)-50,20,3);G.shake=.6;sfx('boom',0);G.defs.slice().forEach(q=>{if(q.row===e.row&&Math.abs(q.x-e.x)<CW*1.2&&!bomb(q)&&!q.charging){q.hp-=900*dmF(q);if(q.hp<=0)killDef(q);}});}G.dead.push({type:e.type,row:e.row,x:e.x+F.off,flip:1,t:e.t,age:0,rot:F.w<=40,wet:G.water.includes(e.row)&&!F.water,boat:G.water.includes(e.row)});if(F.w>60)smoke(e.x+F.w/2,rowY(e.row)-30,8,1.4);G.foes.splice(G.foes.indexOf(e),1);}
+    if(F.vest){G.banner={s:'Al-Baghdadi sets off his vest!',t:4};puff(e.x+15,rowY(e.row)-40,'#ff9a33',40,300);smoke(e.x,rowY(e.row)-50,20,3);G.shake=.6;sfx('boom',0);G.defs.slice().forEach(q=>{if(q.row===e.row&&Math.abs(q.x-e.x)<CW*1.2&&!bomb(q)&&!q.charging){q.hp-=900*dmF(q);if(q.hp<=0)killDef(q);}});}G.dead.push({type:e.type,row:e.row,x:e.x+F.off,flip:1,t:e.t,age:0,rot:F.w<=40,wet:G.water.includes(e.row)&&!F.water&&!e.landed,boat:G.water.includes(e.row)&&!e.landed&&!FOE[e.type].water});if(F.w>60)smoke(e.x+F.w/2,rowY(e.row)-30,8,1.4);G.foes.splice(G.foes.indexOf(e),1);}
   for(const f of [...G.lf]){f.t-=dt;if(Math.random()<.9)G.parts.push({x:LEFT+Math.random()*COLS*CW,y:rowY(f.row)-20-Math.random()*40,vx:10,vy:-40-Math.random()*40,g:-40,life:.6,c:Math.random()<.5?'#ffb030':'#fff0a0',r:1.5+Math.random()*2});if(f.t<=0)G.lf.splice(G.lf.indexOf(f),1);}
   for(const z of [...G.dead]){z.age+=dt;if(z.age>1.2)G.dead.splice(G.dead.indexOf(z),1);}
   for(const p of [...G.eprojs]){p.x-=p.v*dt;if(p.k==='rocket'&&Math.random()<.7)G.parts.push({x:p.x+16,y:p.y,vx:30,vy:-10,life:.5,c:'#bbb',r:3});
@@ -1197,13 +1200,13 @@ const TERR=['mountGreen','steppe','steppe','mountain','grass','steppe','coast','
  'desert','desert','desert','desert','dusk','mountGreen','steppe','mountain','desert','desert','desert','olive'];
 const STONEP=ctx.createPattern(texCanvas(64,64,(x,y)=>{const n=NZ.fbm(x/16,y/16,3,4),k=.78+.3*n+(rnd()-.5)*.08;return[150*k,146*k,138*k];}),'repeat');
 const BGC={};
-let KIT=null,KITGEO=false;
+let KIT=null,KITGEO=false,DECKK=0;
 function kitFor(L,tk){if(L.ch===5)return'modern';return{desert:'ruins',dusk:'ruins',coast:'ruins',coastRock:'ruins',grass:'village',marsh:'village',mountain:'highland',mountGreen:'highland',steppe:'camp',olive:'camp',burnt:'camp',naval:'harbor'}[tk]||'ruins';}
 /* painted terrain: hand-painted field (9x5 tiles) and enemy-side scenery strip per environment */
 const PTS={desert:{n:'desert',p:'ABCDEG',cf:.62,ct:.058,dm:.7,er:.9},coast:{n:'coast',p:'ABCDEG',cf:.62,ct:.022,dm:.663,er:.441},coastRock:{n:'malta',p:'ABCDEG',cf:.73,ct:.12,dm:.66,er:.68},mountain:{n:'mount',p:'ABCDEG',cf:.58,ct:.184,dm:.768,er:.56},mountGreen:{n:'mossy',p:'ABCDEG',cf:.6,ct:.155,dm:.69,er:.39},grass:{n:'meadow',p:'ABCDEG',cf:.7,ct:.106,dm:.66,er:.74},marsh:{n:'marsh',p:'ABCDEG',cf:.7,ct:.098,dm:.6,er:.62},steppe:{n:'steppe',p:'ABCDEG',cf:.5,ct:.043,dm:.77,er:.54},burnt:{n:'burnt',p:'ABCDEG',cf:.74,ct:.106,dm:.77,er:.79},olive:{n:'olive',p:'ABCDEG',cf:.72,ct:.023,dm:.73,er:.53},town:{n:'town',p:'ABCDEG',cf:.68,ct:.175,dm:.76,er:.6},naval:{n:'sea',p:'ABCDEGK',cf:.55,ct:.062,dm:.75,er:.87},dusk:{n:'dusk',p:'ABCDEG',cf:.5,ct:.014,dm:.78,er:.99}},PTI={};
 function ptLoad(k){if(PTI[k]||!PTS[k])return;PTI[k]={};for(const x of PTS[k].p){const im=new Image();im.onload=()=>{for(const q in BGC)delete BGC[q];};im.src='img/terrain/'+PTS[k].n+x+'.webp?v='+BUILD;PTI[k][x]=im;}}
 function ptFor(kind,kit){const tk=kit==='modern'&&kind!=='olive'?'town':kind;ptLoad(tk);ptLoad('naval');const p=PTI[tk];if(!p)return null;return Object.values(p).every(i=>i.complete&&i.naturalWidth)?p:null;}
-function getBG(L){const tk=L.terrain||TERR[L.i]||'desert',kt=kitFor(L,tk),key=tk+'_'+kt+(ptFor(tk,kt)?'P':'')+(L.name==='Didgori'?'G':'')+'_'+L.water.join('')+'_'+W+'x'+H;if(!BGC[key]){KIT=kt;KITGEO=false;BGC[key]=buildBG(tk,L.water);}return BGC[key];}
+function getBG(L){const tk=L.terrain||TERR[L.i]||'desert',kt=kitFor(L,tk),key=tk+'_'+kt+(ptFor(tk,kt)?'P':'')+(L.name==='Didgori'?'G':'')+'_'+L.water.join('')+'k'+(L.deckK||0)+'_'+W+'x'+H;if(!BGC[key]){KIT=kt;DECKK=L.deckK||0;KITGEO=false;BGC[key]=buildBG(tk,L.water);}return BGC[key];}
 function buildBG(kind,water){const PTW=ptFor(kind,KIT)||{};const T=TERRAIN[kind]||TERRAIN.desert,K=2,c=document.createElement('canvas');c.width=W*K;c.height=H*K;const g=c.getContext('2d');g.scale(K,K);
   const HH=ROWS*CH,hw=Math.ceil(W/2),hh=Math.ceil(HH/2),wet=r=>water.includes(r)||(T.deck&&false),gx=LEFT+COLS*CW,seaX=W-62;
   const seaCol=(x,y,deep)=>{let cr=110+(36-110)*deep,cg=176+(104-176)*deep,cb=162+(118-162)*deep;const n=NZ.fbm(x/170,y/170,3),k=.9+.18*n;cr*=k;cg*=k;cb*=k;
@@ -1413,7 +1416,7 @@ function buildBG(kind,water){const PTW=ptFor(kind,KIT)||{};const T=TERRAIN[kind]
     if(P.D){const d=P.D,dw=W,dh=nh(d)*dw/nw(d),dy=gy1+2-M.dm*dh;g.save();clipOut();g.drawImage(d,0,dy,dw,dh);g.restore();}
     /* the field itself */
     {const SA=PTI.naval&&PTI.naval.A;if(SA&&SA.complete&&SA.naturalWidth&&water.length){g.save();g.beginPath();water.forEach(r=>g.rect(LEFT-2,TOP+r*CH,COLS*CW+4,CH));g.clip();g.drawImage(SA,LEFT-2,TOP,COLS*CW+4,HH);g.restore();}}
-    if(P.K&&T.deck){g.save();g.beginPath();for(let r=0;r<ROWS;r++)if(!wet(r))g.rect(LEFT-2,TOP+r*CH,COLS*CW+4,CH);g.clip();g.shadowColor='rgba(20,30,40,.5)';g.shadowBlur=8;g.shadowOffsetY=3;g.drawImage(P.K,LEFT-2,TOP,COLS*CW+4,HH);g.restore();}
+    if(P.K&&T.deck){g.save();g.beginPath();for(let r=0;r<ROWS;r++)if(!wet(r))g.rect(LEFT-2,TOP+r*CH,COLS*CW+4,CH);else if(DECKK)g.rect(LEFT-2,TOP+r*CH,DECKK*CW+2,CH);g.clip();g.shadowColor='rgba(20,30,40,.5)';g.shadowBlur=8;g.shadowOffsetY=3;g.drawImage(P.K,LEFT-2,TOP,COLS*CW+4,HH);g.restore();}
     if(P.A&&kind!=='naval'){g.save();g.beginPath();for(let r=0;r<ROWS;r++)if(landRow(r))g.rect(LEFT-2,TOP+r*CH,COLS*CW+4,CH);g.clip();g.shadowColor='rgba(40,20,5,.45)';g.shadowBlur=8;g.shadowOffsetX=3;g.shadowOffsetY=3;
     g.drawImage(P.A,LEFT-2,TOP,COLS*CW+4,HH);g.restore();}
     /* the enemy side, wholly beside the field */
@@ -1453,7 +1456,7 @@ function fogLayer(){const t=G.t||0,fs=fogSprite();ctx.save();ctx.drawImage(fogVe
   for(let i=0;i<11;i++){const sp=6+(i%4)*3,x=((i*197+t*sp)%(W+600))-300,y=TOP+((i*83)%(ROWS*CH))+Math.sin(t*.2+i)*14,rx=220+(i%3)*90,ry=70+(i%4)*22;ctx.globalAlpha=.32+.12*Math.sin(t*.15+i*1.7);ctx.drawImage(fs,x-rx,y-ry,rx*2,ry*2);}
   ctx.restore();}
 function drawField(L){ctx.drawImage(getBG(L),0,0,W,H);cloudShadows(L);try{ambient(L);}catch(e){}
-  L.water.forEach(r=>{const yy=TOP+r*CH;ctx.save();ctx.beginPath();ctx.rect(0,yy+8,W,CH-16);ctx.clip();ctx.globalCompositeOperation='screen';
+  L.water.forEach(r=>{const yy=TOP+r*CH;ctx.save();ctx.beginPath();ctx.rect(L.deckK?LEFT+L.deckK*CW:0,yy+8,W,CH-16);ctx.clip();ctx.globalCompositeOperation='screen';
     for(let i=0;i<30;i++){const x=((i*83+G.t*(9+(i%4)*4))%(W+60))-30,y=yy+12+((i*37)%(CH-24)),a=.06+.06*Math.sin(G.t*2+i);ctx.strokeStyle='rgba(220,250,255,'+a+')';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(x,y);ctx.quadraticCurveTo(x+12,y-2+Math.sin(G.t*3+i)*1.5,x+26,y);ctx.stroke();}ctx.restore();});}
 
 /* fine full-resolution surface detail, one seamless tile per kind of ground */
@@ -1602,7 +1605,7 @@ function drawPrep(){const L=G.L;drawField(L);if(L.name==='Didgori')didgoriFlags(
       card(x,y,w,h,k,{label:1,dim:on,sel:G.info===k,scale:.5});if(on){sph(x+16,y+16,10,'#3e7a32');otxt('✓',x+16,y+17,13,'#fff',null,0,TF);}
       G.btns.push({x:x+ox,y,w,h,fn:()=>{G.info=k;const j=G.squad.indexOf(k);if(j>=0)G.squad.splice(j,1);else if(G.squad.length<G.SQ)G.squad.push(k);}});});
     const iy=H-80;if(G.info){etxt(DEFS[G.info].name+' · '+DESC[G.info],44,iy-26,15,BF,'left');etxt(HIST[G.info]||'',44,iy-7,13,BF,'left','#9a3e12');}else etxt('Tap a soldier to read about him and add him to your squad.',44,iy-16,15,BF,'left');
-    const nB=G.btns.length;btn(340,iy+2,214,46,'To battle',()=>{if(G.squad.length!==G.SQ)return;lastSquad[G.li]=G.squad.slice();if(G.water.length)G.squad.unshift('raft');G.phase='count';G.pt=0;},{dis:G.squad.length!==G.SQ,size:20});
+    const nB=G.btns.length;btn(340,iy+2,214,46,'To battle',()=>{if(G.squad.length!==G.SQ)return;lastSquad[G.li]=G.squad.slice();G.phase='count';G.pt=0;},{dis:G.squad.length!==G.SQ,size:20});
     btn(48,iy+2,120,46,'Menu',()=>{G={state:'menu',t:G.t,btns:[]};},{size:16});G.btns.slice(nB).forEach(b=>b.x+=ox);ctx.restore();}
   if(G.phase==='count'){const w=['Ready…','Set…','DEFEND!'],i=Math.min(2,Math.floor(G.pt/.85)),k=(G.pt-i*.85)/.85,big=i===2;
     ctx.save();ctx.translate(W/2,H/2+20);const sz=big?1+Math.max(0,.3-k)*.5:1+(1-k)*.08;ctx.scale(sz,sz);ctx.globalAlpha=Math.min(1,(1-k)*4+(big?1:0));
@@ -1854,7 +1857,7 @@ const RALLY={
  hussar:['Winged Charge',d=>{foesNear(d.row,0).forEach(e=>hurt(e,A(2600)));for(let x=d.x;x<W;x+=40)later((x-d.x)/1600,()=>puff(x,d.y-10,'#d8c49a',4,80));}],
  quarter:['Windfall',d=>{for(let i=0;i<12;i++)G.coins.push({x:d.x+(Math.random()-.5)*160,y:d.y-120-Math.random()*60,ty:d.y-20+(Math.random()-.5)*60,v:25,age:0});}],
  banker:['Medici Fortune',d=>{for(let i=0;i<24;i++)G.coins.push({x:d.x+(Math.random()-.5)*220,y:d.y-140-Math.random()*80,ty:d.y-20+(Math.random()-.5)*90,v:25,age:0});}],
- levy:['Call to Arms',d=>{for(let c=0;c<COLS;c++)if(!G.grid[d.row][c]&&!G.water.includes(d.row)){const sv=G.gold;place('levy',d.row,c);G.gold=sv;}G.cd.levy=0;}],
+ levy:['Call to Arms',d=>{for(let c=0;c<COLS;c++)if(!G.grid[d.row][c]&&!seaAt(d.row,c)){const sv=G.gold;place('levy',d.row,c);G.gold=sv;}G.cd.levy=0;}],
  monk:['Miracle',d=>{G.defs.forEach(q=>{q.hp=q.max;q.bless=12;q.ward=12;});G.foes.forEach(e=>hurt(e,A(650)));}],
  caltrops:['Iron Field',d=>{foesNear(d.row,1).forEach(e=>{e.slow=15;hurt(e,A(550));});}],
  shinobi:['Smoke Bomb',d=>{G.foes.forEach(e=>{e.stun=7;puff(e.x+12,rowY(e.row)-30,'#9a9a9a',6,60);});}],
@@ -2072,6 +2075,21 @@ function eraInit(){const L=G.L;G.tun=[];G.wells=[];G.wx=null;G.heat=false;/* hea
 function isWell(r,c){return (G.wells||[]).some(w=>w[0]===r&&w[1]===c);}
 function nearWell(d){return (G.wells||[]).some(w=>Math.abs(w[0]-d.row)<=1&&Math.abs(w[1]-d.col)<=1);}
 const NOHEAT=new Set(['keg','naffatun','caltrops','fougasse','raft','monk','quarter','banker']);
+/* galleys anchor off the field and fling corsairs onto the land or deck, like a siege cannon */
+function galleyUpdate(dt){const L=G.L,stop=LEFT+CW*8.5;
+  for(const e of [...G.foes]){
+    if(e.fly){e.fly.t+=dt;const u=Math.min(1,e.fly.t/e.fly.d);e.x=e.fly.x0+(e.fly.x1-e.fly.x0)*u;e.arc=(rowY(e.row)-rowY(e.fly.r0))*-(1-u)+Math.sin(u*PI)*150;e.stun=.05;
+      if(u>=1){e.fly=null;e.arc=0;e.stun=.35;puff(e.x+FOE[e.type].w/2,rowY(e.row)-4,'#c9b48a',10,90);sfx('thud',0);}continue;}
+    if(e.type!=='galley')continue;
+    if(!e.hold&&e.x<=stop){e.hold=true;e.x=stop;e.shots=G.deckK?4:3;e.next=1;}
+    if(!e.hold)continue;e.next-=dt;
+    if(e.next<=0&&e.shots>0){e.shots--;e.next=3.4;
+      const land=[0,1,2,3,4].filter(r=>!G.water.includes(r)),rows=G.deckK?[0,1,2,3,4]:land.sort((a,b)=>Math.abs(a-e.row)-Math.abs(b-e.row)).slice(0,2);
+      const r=rows[Math.floor(Math.random()*rows.length)],x1=G.deckK?LEFT+CW*(G.deckK-.6):LEFT+CW*(4.2+Math.random()*1.6),ty=Math.random()<.7?'corsair':'janissary';
+      G.foes.push({type:ty,row:r,x:e.x+20,hp:FOE[ty].hp*G.hpm,max:FOE[ty].hp*G.hpm,t:0,flash:0,atk:false,landed:1,fly:{t:0,d:1.3,x0:e.x+20,x1,r0:e.row}});
+      sfx('boom',0);puff(e.x+20,rowY(e.row)-40,'#e8e2d4',16,140);G.shake=Math.max(G.shake||0,.15);
+      if(!G.galHint){G.galHint=1;G.banner={s:'Galley cannons! Corsairs are being fired onto the shore',t:2.8};}}
+    if(e.shots<=0&&e.next<=0){e.hp=0;}}}
 function eraUpdate(dt){const L=G.L,gentle=eraGentle();
   /* II · desert heat: idle soldiers away from a well wilt and turn dizzy */
   if(G.heat){const idleT=gentle?11:7,rate=gentle?.012:.025,floor=gentle?.5:.25;
@@ -2089,7 +2107,7 @@ function eraUpdate(dt){const L=G.L,gentle=eraGentle();
       let trap=null;for(let c=0;c<COLS;c++){const d=G.grid[e.row][c];if(d&&(d.type==='caltrops'||d.type==='fougasse')&&Math.abs(d.x-e.x)<CW*.4){trap=d;break;}}
       if(e.x<=e.tx||trap){if(trap)e.x=trap.x+4;G.tun.splice(G.tun.indexOf(e),1);e.flash=.2;G.foes.push(e);puff(e.x+12,rowY(e.row)-10,'#8a6a40',22,170);smoke(e.x+12,rowY(e.row)-20,6,1.4);G.shake=Math.max(G.shake,.15);sfx('boom',.1);}}}
   /* IV · galleys drop boarding planks onto the land lanes */
-  if(L.ch===3){for(const e of G.foes){if(e.type!=='galley'||e.planked||e.x>LEFT+CW*6.4)continue;e.planked=true;
+  galleyUpdate(dt);if(false){for(const e of G.foes){if(e.type!=='galley'||e.planked||e.x>LEFT+CW*6.4)continue;e.planked=true;
       const opts=[e.row-1,e.row+1].filter(r=>r>=0&&r<ROWS&&!L.water.includes(r));if(!opts.length)continue;const r=opts[Math.floor(Math.random()*opts.length)];
       G.foes.push({type:'plank',row:r,x:e.x+10,hp:300*G.hpm,max:300*G.hpm,t:0,flash:0,atk:false,spawns:gentle?2:3,next:.8,life:24});sfx('thud',0);
       if(!G.plankHint){G.plankHint=1;G.banner={s:'Boarding planks! Break them to stop the corsairs',t:2.8};}}
@@ -2192,7 +2210,7 @@ const PERK={quarter:'Every 3rd coin is a big coin (×2)',banker:'Every drop is a
 function placePerk(d){const k=d.type;if(!P3(k))return;
   if(k==='pavise')d.inv=10;
   if(k==='fougasse')d.arm=.05;
-  if(k==='levy'&&!d.squad){G.cd.levy=0;for(const c of[d.col-1,d.col-2])if(c>=0&&!G.grid[d.row][c]&&!G.water.includes(d.row)&&!isWell(d.row,c)){const g=G.gold;place('levy',d.row,c);G.gold=g;const q=G.grid[d.row][c];if(q)q.squad=1;}G.cd.levy=0;}}
+  if(k==='levy'&&!d.squad){G.cd.levy=0;for(const c of[d.col-1,d.col-2])if(c>=0&&!G.grid[d.row][c]&&!seaAt(d.row,c)&&!isWell(d.row,c)){const g=G.gold;place('levy',d.row,c);G.gold=g;const q=G.grid[d.row][c];if(q)q.squad=1;}G.cd.levy=0;}}
 /* perks that run every frame: healing legionaries, burning foes, fire carpets, the brazier's blaze */
 function perkUpdate(dt){G.fires=G.fires||[];G.allFire=G.defs.some(d=>d.type==='brazier'&&P3('brazier'));
   G.defs.forEach(d=>{if(d.type==='legion'&&P3('legion'))d.hp=Math.min(d.max,d.hp+d.max*.05*dt);});
@@ -2358,7 +2376,7 @@ function ambient(L){const kind=L.ch===5&&(L.terrain||TERR[L.i])!=='olive'?'town'
   /* drifting dust motes and sand across the field */
   if(A.dust&&!night){ctx.fillStyle=A.dust;for(let i=0;i<22;i++){const per=14+AH(i,20)*8,ph=((t+AH(i,21)*per)%per)/per,x=W+20-ph*(W+40),y=TOP+AH(i,22)*HH+Math.sin(t*1.2+i)*8;ctx.globalAlpha=.25+.25*Math.sin(t*3+i);ctx.beginPath();ctx.arc(x,y,1.1+AH(i,23)*1.3,0,PI*2);ctx.fill();}ctx.globalAlpha=1;}
   /* glints dancing on the sea */
-  if(A.glint){const zones=kind==='naval'?[[gx,0,R,H],[0,0,LEFT,H],[LEFT,0,COLS*CW,TOP]]:[[gx,0,R,TOP+HH*.4]];(L.water||[]).forEach(r=>zones.push([LEFT,TOP+r*CH,COLS*CW,CH]));
+  if(A.glint){const zones=kind==='naval'?[[gx,0,R,H],[0,0,LEFT,H],[LEFT,0,COLS*CW,TOP]]:[[gx,0,R,TOP+HH*.4]];(L.water||[]).forEach(r=>{const x0=LEFT+(L.deckK||0)*CW;zones.push([x0,TOP+r*CH,LEFT+COLS*CW-x0,CH]);});
     zones.forEach(([zx,zy,zw,zh],j)=>{for(let i=0;i<Math.ceil(zw*zh/9000)*A.glint;i++){const a=Math.max(0,Math.sin(t*3+i*2.3+j)),x=zx+AH(i+j*50,24)*zw,y=zy+AH(i+j*50,25)*zh;if(a<.6)continue;ctx.globalAlpha=(a-.6)*2.2;ctx.fillStyle='#ffffff';ctx.beginPath();ctx.ellipse(x,y,5*a,1.2,0,0,PI*2);ctx.fill();ctx.fillRect(x-.6,y-3*a,1.2,6*a);}});ctx.globalAlpha=1;}
   /* flickering torch light at dusk */
   if(A.torch){const fl=.5+.5*Math.sin(t*11)*Math.sin(t*7.3);ctx.globalCompositeOperation='lighter';[[gx+R*.2,TOP+HH*.25],[gx+R*.55,TOP+HH*.6],[LEFT*.35,TOP+HH*.1],[LEFT*.35,TOP+HH*.75]].forEach(([x,y],j)=>{const r=40+fl*12+j*3,g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'rgba(255,170,70,.18)');g.addColorStop(1,'rgba(255,120,40,0)');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);});ctx.globalCompositeOperation='source-over';}
@@ -2370,8 +2388,8 @@ function ambient(L){const kind=L.ch===5&&(L.terrain||TERR[L.i])!=='olive'?'town'
 
 function drawGame(){const L=G.L;ctx.save();if(G.shake>0)ctx.translate((Math.random()-.5)*10*G.shake*3,(Math.random()-.5)*10*G.shake*3);
   drawField(L);if(L.name==='Didgori')didgoriFlags();crossAura();eraDrawGround();drawFires();
-  if(G.sel||G.shovel){for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const ex=G.grid[r][c],wet=L.water.includes(r);let ok;
-      if(G.shovel)ok=!!ex;else if(G.sel==='raft')ok=wet&&!ex;else ok=wet?(ex&&ex.type==='raft'):!ex;if(isWell(r,c))ok=false;
+  if(G.sel||G.shovel){for(let r=0;r<ROWS;r++)for(let c=0;c<COLS;c++){const ex=G.grid[r][c],wet=seaAt(r,c);let ok;
+      if(G.shovel)ok=!!ex;else ok=!wet&&!ex;if(isWell(r,c))ok=false;
       if(ok){ctx.fillStyle=G.shovel?'rgba(200,40,40,.2)':'rgba(255,230,160,.2)';ctx.fillRect(LEFT+c*CW+4,TOP+r*CH+4,CW-8,CH-8);ctx.strokeStyle=G.shovel?'rgba(255,120,120,.5)':'rgba(255,230,160,.55)';ctx.lineWidth=1;ctx.strokeRect(LEFT+c*CW+4.5,TOP+r*CH+4.5,CW-9,CH-9);}}}
   for(let r=0;r<ROWS;r++){drawCannon(G.cannons[r],r);const wet=L.water.includes(r);
     G.dead.filter(z=>z.row===r).forEach(z=>{const k=Math.min(1,z.age/.45),ang=z.rot?(z.flip?1:-1)*k*PI*.46:0;ctx.save();ctx.globalAlpha=Math.max(0,1-Math.max(0,z.age-.55)/.6);
@@ -2384,8 +2402,8 @@ function drawGame(){const L=G.L;ctx.save();if(G.shake>0)ctx.translate((Math.rand
       if(d.type==='raft'){drawUnit('raft',d.x,d.y+4,d.t,{flash:d.hit});}
       else{const dz=d.dizzy;if(dz){ctx.save();ctx.translate(d.x,d.y);ctx.rotate(Math.sin(G.t*5+d.col)*.09);ctx.translate(-d.x,-d.y);}drawUnit(ty,d.x-(d.type==='cossack'||d.type==='greekfire'||d.type==='pavise'?8:d.type==='hussar'?14:d.type==='hwacha'||d.type==='ballista'?-6:0),d.y-(d.onRaft&&!d.charging?8:0),d.t,{lv:lvOf(d.type),a:d.a,flash:d.hit,fire:d.fire,walk:d.charging&&d.type==='hussar',scale:popS(d.pop),armed:d.armed,rest:d.rest>0,leap:d.leap&&Math.min(1,d.leap.t/.45)});if(dz)ctx.restore();chevrons(d.x+18,d.y+2,lvOf(d.type),.9);}
       if(d.hp<d.max&&!bomb(d)&&!d.charging){ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(d.x-20,d.y+4,40,4);ctx.fillStyle='#6ac04a';ctx.fillRect(d.x-20,d.y+4,40*d.hp/d.max,4);}});
-    G.foes.filter(e=>e.row===r).sort((a,b)=>b.x-a.x).forEach(e=>{const F=FOE[e.type],boat=wet&&!F.water;if(e.leaf){ctx.save();ctx.globalCompositeOperation='lighter';glow(e.x+F.w/2,rowY(r)-46,66,'rgba(90,255,70,'+(.5+.15*Math.sin(G.t*5))+')');ctx.restore();}
-      drawUnit(e.type,e.x+F.off,rowY(r)-(boat?10:0),e.t,{flip:1,walk:!e.atk&&!(e.frozen>0),a:Math.max(e.atk?1-((e.t*1.4)%1):0,e.mf||0),flash:e.flash,slow:e.slow>0,scale:F.scale,dropped:e.dropped});drawFrozen(e,F,rowY(r)-(boat?10:0));
+    G.foes.filter(e=>e.row===r).sort((a,b)=>b.x-a.x).forEach(e=>{const F=FOE[e.type],boat=wet&&!F.water&&!e.landed;if(e.leaf){ctx.save();ctx.globalCompositeOperation='lighter';glow(e.x+F.w/2,rowY(r)-46,66,'rgba(90,255,70,'+(.5+.15*Math.sin(G.t*5))+')');ctx.restore();}
+      drawUnit(e.type,e.x+F.off,rowY(r)-(boat?10:0)-(e.arc||0),e.t,{flip:1,walk:!e.atk&&!(e.frozen>0),a:Math.max(e.atk?1-((e.t*1.4)%1):0,e.mf||0),flash:e.flash,slow:e.slow>0,scale:F.scale,dropped:e.dropped});drawFrozen(e,F,rowY(r)-(boat?10:0));
       if(boat){ctx.save();ctx.translate(e.x+F.off,rowY(r));ctx.scale(-1,1);drawBoat(e.t,64);ctx.restore();}
       if(e.hp<e.max&&!F.boss){ctx.fillStyle='rgba(0,0,0,.45)';ctx.fillRect(e.x+F.w/2-20,rowY(r)+4,40,4);ctx.fillStyle='#d04030';ctx.fillRect(e.x+F.w/2-20,rowY(r)+4,40*Math.max(0,e.hp)/e.max,4);}});}
   G.lf.forEach(f=>{const k=Math.min(1,f.t*1.5),y=rowY(f.row);ctx.save();ctx.globalAlpha=k;ctx.globalCompositeOperation='lighter';const g=ctx.createLinearGradient(0,y-60,0,y);g.addColorStop(0,'rgba(255,90,20,0)');g.addColorStop(1,'rgba(255,120,30,.45)');ctx.fillStyle=g;ctx.fillRect(LEFT,y-60,COLS*CW,62);
@@ -2497,7 +2515,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261123-155440';
+const BUILD='20261123-160420';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
@@ -2535,10 +2553,10 @@ cv.addEventListener('pointerdown',ev=>{ev.preventDefault();if(SOUND){auInit();if
   if(G.pwSel==='volley'){usePower('volley',x,y);return;}
   if(G.leafSel){const d=G.grid[rw][c];G.leafSel=false;if(d&&d.type!=='raft'&&G.leaves>0)rally(d);return;}
   if(G.shovel){const d=G.grid[rw][c];if(d&&!isRelic(d)){removeDef(d);puff(d.x,d.y-20,'#c9b48a',8,60);}G.shovel=false;return;}
-  if(G.sel){const D=DEFS[G.sel],wet=G.water.includes(rw),ex=G.grid[rw][c];let ok;
-    if(G.sel==='raft')ok=wet&&!ex;else ok=wet?(ex&&ex.type==='raft'):!ex;
+  if(G.sel){const D=DEFS[G.sel],wet=seaAt(rw,c),ex=G.grid[rw][c];let ok;
+    ok=!wet&&!ex;
     if(isWell(rw,c)){G.floats.push({x,y:y-20,s:'A well stands here',t:.9});return;}
-    if(!ok){G.floats.push({x,y:y-20,s:G.sel==='raft'?'Rafts go on water':wet?'Place a raft first':'Occupied',t:.9});return;}
+    if(!ok){G.floats.push({x,y:y-20,s:wet?'Soldiers need solid ground':'Occupied',t:.9});return;}
     if(G.gold>=D.cost&&G.cd[G.sel]<=0)place(G.sel,rw,c);G.sel=null;}
 },{passive:false});
 }
