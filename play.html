@@ -1069,9 +1069,9 @@ function update(dt){
     const F=FOE[s.type];if(!G.seen.has(s.type)){if(G.seen.size)G.banner={s:'New foe: '+F.name,t:2.6};G.seen.add(s.type);}G.nsp=(G.nsp||0)+1;G.foes.push({type:s.type,row:s.row,x:W+10+Math.random()*30,hp:F.hp*G.hpm,max:F.hp*G.hpm,t:Math.random()*3,flash:0,atk:false,leaf:G.nsp%7===4,tun:!!G.sappers&&s.type==='sapper'});}
   stormUpdate(dt);leafUpdate(dt);eraUpdate(dt);hitFxUpdate(dt);wxCosUpdate(dt);if(G.slowmo>0)G.slowmo-=dt*4;perkUpdate(dt);powersUpdate(dt);if(!G.relicPlaced)chalPlaceRelic();G.sky-=(G.storm&&G.storm.on)?0:dt*(wxIs('clear')?2:1);if(G.sky<=0){G.sky=9+Math.random()*4;G.coins.push({x:LEFT+40+Math.random()*(COLS*CW-80),y:TOP-10,ty:TOP+50+Math.random()*(ROWS*CH-110),v:25,age:0});}
   for(const k of ORDER)G.cd[k]=Math.max(0,G.cd[k]-dt);
-  for(const d of [...G.defs]){BLESS=(d.bless>0?(d.blessK||1.15):1)*PW(d.type);d.bless=Math.max(0,(d.bless||0)-dt);d.ward=Math.max(0,(d.ward||0)-dt);d.inv=Math.max(0,(d.inv||0)-dt);d.rally=Math.max(0,(d.rally||0)-dt);const np0=G.projs.length;d.t+=dt;d.pop=(d.pop||0)+dt;d.a=Math.max(0,d.a-dt*2.5);d.hit-=dt;d.timer-=dt;
+  for(const d of [...G.defs]){BLESS=(d.bless>0?(d.blessK||1.15):1)*PW(d.type);d.bless=Math.max(0,(d.bless||0)-dt);d.ward=Math.max(0,(d.ward||0)-dt);d.inv=Math.max(0,(d.inv||0)-dt);d.rally=Math.max(0,(d.rally||0)-dt);const np0=G.projs.length;d.t+=dt;d.pop=(d.pop||0)+dt;d.a=Math.max(0,d.a-dt*(d.type==='archer'?1.1:2.5));d.hit-=dt;d.timer-=dt;
     if(d.type==='quarter'&&d.timer<=0){d.timer=16;d.a=1;d.cc=(d.cc||0)+1;const big=P3('quarter')&&d.cc%3===0;G.coins.push({x:d.x+(Math.random()*30-15),y:d.y-70,ty:d.y-24,v:Math.round(25*PW('quarter'))*(big?2:1),age:0,big});}
-    if(d.type==='archer'&&d.timer<=0&&ahead(d)){d.timer=1.4;d.a=1;G.projs.push(Object.assign({bl:BLESS,x:d.x+24,y:d.y-40,row:d.row,v:430,dmg:20,k:'arrow'},P3('archer')?{pierce:new Set(),burn:1}:{}));sfx('bow');}
+    if(d.type==='archer'&&d.timer<=0&&ahead(d)){d.timer=1.4;d.a=1;G.projs.push(Object.assign({bl:BLESS,x:d.x+48,y:d.y-54,row:d.row,v:430,dmg:20,k:'arrow'},P3('archer')?{pierce:new Set(),burn:1}:{}));sfx('bow');}
     if(d.type==='cossack'&&d.timer<=0&&ahead(d)){d.timer=3.4;d.a=1;const p3=P3('cossack');for(let k=0;k<(p3?3:1);k++)G.projs.push(Object.assign({bl:BLESS,x:d.x+44-k*34,y:d.y-45,row:d.row,v:1100,dmg:80,k:'ball'},p3?{pierce:new Set()}:{}));smoke(d.x+50,d.y-50,6,1);sfx('musket');}
     if(d.type==='templar'&&d.timer<=0){const hits=G.foes.filter(e=>(P3('templar')?Math.abs(e.row-d.row)<=1:e.row===d.row)&&e.x<d.x+CW+12&&e.x+FOE[e.type].w>d.x-12);if(hits.length){d.timer=1;d.a=1;hits.forEach(e=>hurt(e,25));sfx('clash');}}
     if(d.type==='hoplite'&&d.timer<=0){const e=G.foes.filter(e=>e.row===d.row&&e.x<d.x+(P3('hoplite')?W:CW*2+10)&&e.x+FOE[e.type].w>d.x-10).sort((p,q)=>p.x-q.x)[0];if(e){d.timer=1.1;d.a=1;hurt(e,24);sfx('clash');}}
@@ -2481,7 +2481,56 @@ function uPose(kind,t,a,o){const p=1-a,P={lean:Math.sin(t*1.3)*1.6+Math.sin(t*.5
   if(kind==='fire')P.wob=u=>u>.45?Math.sin(t*9+u*9)*3.2*(u-.45)+Math.sin(t*13.7+u*5)*1.4*(u-.45):0;
   if(o.flash>0){P.dx-=3;P.lean-=4;}
   return P;}
-function uDraw(type,x,y,t,o){const M=USPR[type],kind=M[5],a=o.a||0,S=o.scale||1,lv=o.lv|0,base=uBase(type,lv),H=M[4],Wd=H*M[0],fx=M[1]*Wd;
+
+/* ================= RIGGED UNITS: characters built from parts with real joints (shoulder, elbow, bow arm) ================= */
+const RIG={archer:{H:92,feet:[484,1254],figH:1252,parts:{body:[67,1,1035,1253],upper:[74,448,247,209],fore:[205,446,282,159],bow:[772,1,357,1100]},
+  P:{top:[856,40],bot:[845,1045],nock:[488,498],tip:[1185,471],S:[300,560],E:[120,535],B:[790,580]}}};
+const RIMG={};
+function rigImg(type,n){const k=type+'_'+n;if(!RIMG[k]){const im=new Image();im.src='img/units/rig/'+k+'.webp?v='+BUILD;RIMG[k]=im;}return RIMG[k];}
+function rigReady(type){const R=RIG[type];if(!R)return false;let ok=true;for(const n in R.parts){const im=rigImg(type,n);if(!(im.complete&&im.naturalWidth))ok=false;}return ok;}
+const RTINT={};
+function rigPart(type,n,lv){if(lv<2)return rigImg(type,n);const k=type+n+lv;if(RTINT[k])return RTINT[k];const im=rigImg(type,n),c=document.createElement('canvas');c.width=im.naturalWidth;c.height=im.naturalHeight;const g=c.getContext('2d');g.drawImage(im,0,0);
+  g.globalCompositeOperation='source-atop';g.fillStyle=lv>=3?'rgba(255,196,40,.26)':'rgba(190,110,50,.2)';g.fillRect(0,0,c.width,c.height);RTINT[k]=c;return c;}
+/* two-bone reach: where should shoulder and elbow turn for the hand to reach T */
+function ik2(S,E,H,T,flip){const L1=Math.hypot(E[0]-S[0],E[1]-S[1]),L2=Math.hypot(H[0]-E[0],H[1]-E[1]);let dx=T[0]-S[0],dy=T[1]-S[1],d=Math.hypot(dx,dy);d=Math.max(Math.abs(L1-L2)+1,Math.min(L1+L2-1,d));
+  const th=Math.atan2(dy,dx),al=Math.acos(Math.max(-1,Math.min(1,(L1*L1+d*d-L2*L2)/(2*L1*d))));
+  const b1=Math.atan2(E[1]-S[1],E[0]-S[0]),dh0=Math.hypot(H[0]-S[0],H[1]-S[1]),th0=Math.atan2(H[1]-S[1],H[0]-S[0]),al0=Math.acos(Math.max(-1,Math.min(1,(L1*L1+dh0*dh0-L2*L2)/(2*L1*dh0))));
+  const sg=Math.abs((th0+al0)-b1)<Math.abs((th0-al0)-b1)?1:-1,a1=th+sg*al,E2=[S[0]+Math.cos(a1)*L1,S[1]+Math.sin(a1)*L1];
+  const b2=Math.atan2(H[1]-E[1],H[0]-E[0]),a2=Math.atan2(S[1]+Math.sin(th)*d-E2[1],S[0]+Math.cos(th)*d-E2[0]);return{d1:a1-b1,d2:a2-b2-(a1-b1),E2};}
+const lerp=(a,b,k)=>a+(b-a)*k,lerp2=(a,b,k)=>[lerp(a[0],b[0],k),lerp(a[1],b[1],k)];
+function rot2(p,c,a){const s=Math.sin(a),co=Math.cos(a),x=p[0]-c[0],y=p[1]-c[1];return[c[0]+x*co-y*s,c[1]+x*s+y*co];}
+function rigDraw(type,x,y,t,o){const R=RIG[type],P=R.P,a=o.a||0,p=1-a,lv=o.lv|0,sc=(o.scale||1)*R.H/R.figH;
+  ctx.save();ctx.translate(x,y);ctx.scale(sc,sc);if(o.flip)ctx.scale(-1,1);ctx.translate(-R.feet[0],-R.feet[1]);if(o.alpha!=null)ctx.globalAlpha*=o.alpha;
+  if(o.flash>0)ctx.filter='brightness(1.8)';
+  /* breathing: the whole figure rises and settles from the feet */
+  const br=Math.sin(t*2.2);ctx.translate(R.feet[0],R.feet[1]);ctx.scale(1-br*.006,1+br*.014);ctx.translate(-R.feet[0],-R.feet[1]);
+  ctx.save();ctx.fillStyle='rgba(30,18,6,.3)';ctx.beginPath();ctx.ellipse(R.feet[0],R.feet[1]-6,330,40,0,0,PI*2);ctx.fill();ctx.restore();
+  const D=(n,img)=>{const q=R.parts[n];ctx.drawImage(img||rigPart(type,n,lv),q[0],q[1],q[2],q[3]);};
+  /* --- the shot: release, reach forward for a new arrow, nock it, draw back --- */
+  let hand=P.nock,held=true,arrow=true,arAng=null,bowA=Math.sin(t*1.3)*.012,vib=0,pull=1;
+  const Q=[200,335],RT=[560,488],REL=[P.nock[0]-40,P.nock[1]-30];
+  if(a>0){if(p<.1){const k=ease(p/.1);hand=lerp2(P.nock,REL,k);held=false;arrow=false;vib=1;bowA+=.05*(1-k)+.02;}
+    else if(p<.38){const k=ease((p-.1)/.28);hand=lerp2(REL,Q,k);held=false;arrow=false;vib=Math.max(0,1-(p-.1)*3.2);}
+    else if(p<.66){const k=ease((p-.38)/.28);hand=lerp2(Q,RT,k);held=false;arrow=true;arAng=lerp(-2.0,0,k);vib=0;}
+    else{const k=ease((p-.66)/.34);hand=lerp2(RT,P.nock,k);held=true;arrow=true;pull=Math.min(1,(p-.66)/.12);}}
+  else{hand=[P.nock[0]+Math.sin(t*23)*1.5,P.nock[1]+Math.sin(t*17)*1];}
+  const bt=rot2(P.top,P.B,bowA),bb=rot2(P.bot,P.B,bowA);
+  D('body');
+  /* arrow */
+  if(arrow){const dir=Math.atan2(P.tip[1]-P.nock[1],P.tip[0]-P.nock[0])+(arAng||0),L=Math.hypot(P.tip[0]-P.nock[0],P.tip[1]-P.nock[1]);ctx.save();ctx.translate(hand[0],hand[1]);ctx.rotate(dir);
+    ctx.lineCap='round';ctx.strokeStyle='#2a1406';ctx.lineWidth=17;ctx.beginPath();ctx.moveTo(0,0);ctx.lineTo(L-70,0);ctx.stroke();ctx.strokeStyle='#c98a4a';ctx.lineWidth=8;ctx.beginPath();ctx.moveTo(4,0);ctx.lineTo(L-72,0);ctx.stroke();
+    ctx.fillStyle='#b8bec6';ctx.strokeStyle='#2a1406';ctx.lineWidth=6;ctx.beginPath();ctx.moveTo(L,0);ctx.lineTo(L-80,-28);ctx.lineTo(L-66,0);ctx.lineTo(L-80,28);ctx.closePath();ctx.fill();ctx.stroke();ctx.fillStyle='rgba(255,255,255,.6)';ctx.beginPath();ctx.moveTo(L-8,-2);ctx.lineTo(L-70,-20);ctx.lineTo(L-62,-4);ctx.fill();
+    ctx.fillStyle='#f4f0e6';ctx.lineWidth=5;for(const s of[-1,1]){ctx.beginPath();ctx.moveTo(14,0);ctx.lineTo(30,s*34);ctx.lineTo(95,s*30);ctx.lineTo(86,0);ctx.closePath();ctx.fill();ctx.stroke();}ctx.restore();}
+  /* bow arm */
+  ctx.save();ctx.translate(P.B[0],P.B[1]);ctx.rotate(bowA);ctx.translate(-P.B[0],-P.B[1]);D('bow');ctx.restore();
+  /* string: bent to the hand while held, straight and humming when loose */
+  const rest=lerp2(bt,bb,.455),sp=held?lerp2(rest,hand,pull):rest,wob=vib>0?Math.sin(t*90)*vib*16:0;ctx.lineCap='round';
+  for(const [w,c] of[[13,'#2a1406'],[5,'#f0dcb0']]){ctx.strokeStyle=c;ctx.lineWidth=w;ctx.beginPath();ctx.moveTo(bt[0],bt[1]);ctx.quadraticCurveTo(held?sp[0]:sp[0]+wob,held?sp[1]:sp[1],bb[0],bb[1]);if(held){ctx.moveTo(bt[0],bt[1]);ctx.lineTo(sp[0],sp[1]);ctx.lineTo(bb[0],bb[1]);}ctx.stroke();}
+  /* drawing arm: shoulder and elbow turn so the hand reaches its target */
+  const K=ik2(P.S,P.E,P.nock,hand);ctx.save();ctx.translate(P.S[0],P.S[1]);ctx.rotate(K.d1);ctx.translate(-P.S[0],-P.S[1]);D('upper');ctx.translate(P.E[0],P.E[1]);ctx.rotate(K.d2);ctx.translate(-P.E[0],-P.E[1]);D('fore');ctx.restore();
+  ctx.filter='none';ctx.restore();}
+
+function uDraw(type,x,y,t,o){if(RIG[type]&&rigReady(type)){rigDraw(type,x,y,t,o);return;}const M=USPR[type],kind=M[5],a=o.a||0,S=o.scale||1,lv=o.lv|0,base=uBase(type,lv),H=M[4],Wd=H*M[0],fx=M[1]*Wd;
   const P=uPose(kind,t,a,o);ctx.save();ctx.translate(x,y);ctx.scale(S,S);if(o.flip)ctx.scale(-1,1);if(o.alpha!=null)ctx.globalAlpha*=o.alpha;
   ctx.translate(P.dx,P.dy);if(P.rot)ctx.rotate(P.rot);ctx.scale(P.sx,P.sy);
   /* soft contact shadow */
@@ -2642,7 +2691,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261123-163653';
+const BUILD='20261123-164957';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
