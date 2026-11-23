@@ -1006,7 +1006,7 @@ function seaAt(r,c){return G.water.includes(r)&&!(G.deckK&&c<G.deckK);}
 /* steady climb: every battle brings more foes than the one before */
 LEVELS.forEach((L,i)=>{L.i=i;L.n=Math.round(14+i*1.8);});
 /* per-battle strength, tuned so every battle can be won and the challenge climbs steadily */
-const KTUNE=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.64, 1.0, 0.73, 0.6, 1.09, 0.88, 0.76, 0.64, 0.71, 0.64, 0.73, 0.94, 0.81, 0.64, 0.71, 1.45, 0.67, 1.38, 0.75, 1.11, 0.67, 0.94, 0.81, 0.52, 0.69, 0.39, 0.5];LEVELS.forEach((L,i)=>{L.k=KTUNE[i];});
+const KTUNE=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.64, 1.0, 0.73, 0.6, 1.09, 0.88, 0.76, 0.64, 0.71, 0.64, 0.73, 0.78, 0.81, 0.64, 0.71, 1.45, 0.67, 1.38, 0.75, 1.11, 0.67, 0.94, 0.81, 0.52, 0.69, 0.39, 0.5];LEVELS.forEach((L,i)=>{L.k=KTUNE[i];});
 function isLand(k){const F=FOE[k];return F.land||F.cav||k==='technical';}
 
 let unlocked=1;try{const v=localStorage.getItem('siegelines_u2');if(v)unlocked=Math.max(1,parseInt(v,10)||1);else{const o=parseInt(localStorage.getItem('siegelines_u')||'1',10)||1;unlocked=Math.min(32,o>1?1+5*(o-1):1);}}catch(e){}
@@ -2515,7 +2515,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261123-160420';
+const BUILD='20261123-160437';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
