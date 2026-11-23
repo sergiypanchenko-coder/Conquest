@@ -1006,7 +1006,7 @@ function seaAt(r,c){return G.water.includes(r)&&!(G.deckK&&c<G.deckK);}
 /* steady climb: every battle brings more foes than the one before */
 LEVELS.forEach((L,i)=>{L.i=i;L.n=Math.round(14+i*1.8);});
 /* per-battle strength, tuned so every battle can be won and the challenge climbs steadily */
-const KTUNE=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.64, 1.0, 0.73, 0.6, 1.09, 0.88, 0.76, 0.64, 0.71, 0.64, 0.73, 0.78, 0.81, 0.64, 0.71, 1.45, 0.67, 1.38, 0.75, 1.11, 0.67, 0.94, 0.81, 0.52, 0.69, 0.39, 0.5];LEVELS.forEach((L,i)=>{L.k=KTUNE[i];});
+const KTUNE=[1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 0.64, 1.0, 0.73, 0.6, 1.09, 0.88, 0.76, 0.64, 0.71, 0.64, 0.73, 0.78, 0.81, 0.64, 0.58, 1.45, 0.67, 1.38, 0.75, 1.11, 0.67, 0.94, 0.81, 0.52, 0.69, 0.39, 0.5];LEVELS.forEach((L,i)=>{L.k=KTUNE[i];});
 function isLand(k){const F=FOE[k];return F.land||F.cav||k==='technical';}
 
 let unlocked=1;try{const v=localStorage.getItem('siegelines_u2');if(v)unlocked=Math.max(1,parseInt(v,10)||1);else{const o=parseInt(localStorage.getItem('siegelines_u')||'1',10)||1;unlocked=Math.min(32,o>1?1+5*(o-1):1);}}catch(e){}
@@ -1451,9 +1451,9 @@ function buildBG(kind,water){const PTW=ptFor(kind,KIT)||{};const T=TERRAIN[kind]
 /* Didgori: heavy fog rolling in from the enemy side */
 let FOGS=null;function fogSprite(){if(FOGS)return FOGS;FOGS=document.createElement('canvas');FOGS.width=FOGS.height=128;const g=FOGS.getContext('2d'),gr=g.createRadialGradient(64,64,0,64,64,64);gr.addColorStop(0,'rgba(236,240,240,1)');gr.addColorStop(.6,'rgba(230,234,236,.55)');gr.addColorStop(1,'rgba(226,230,234,0)');g.fillStyle=gr;g.fillRect(0,0,128,128);return FOGS;}
 let FOGV=null;function fogVeil(){const key=W+'x'+H;if(FOGV&&FOGV.key===key)return FOGV.c;const c=document.createElement('canvas');c.width=Math.ceil(W/4);c.height=Math.ceil(H/4);const g=c.getContext('2d');g.scale(.25,.25);
-  const v=g.createLinearGradient(LEFT,0,W,0);v.addColorStop(0,'rgba(226,230,232,.22)');v.addColorStop(.45,'rgba(226,230,232,.42)');v.addColorStop(1,'rgba(232,236,238,.82)');g.fillStyle=v;g.fillRect(0,TOP,W,ROWS*CH);FOGV={key,c};return c;}
-function fogLayer(){const t=G.t||0,fs=fogSprite();ctx.save();ctx.drawImage(fogVeil(),0,0,W,H);ctx.beginPath();ctx.rect(0,TOP,W,ROWS*CH);ctx.clip();
-  for(let i=0;i<11;i++){const sp=6+(i%4)*3,x=((i*197+t*sp)%(W+600))-300,y=TOP+((i*83)%(ROWS*CH))+Math.sin(t*.2+i)*14,rx=220+(i%3)*90,ry=70+(i%4)*22;ctx.globalAlpha=.32+.12*Math.sin(t*.15+i*1.7);ctx.drawImage(fs,x-rx,y-ry,rx*2,ry*2);}
+  const v=g.createLinearGradient(LEFT,0,W,0);v.addColorStop(0,'rgba(226,230,232,.22)');v.addColorStop(.45,'rgba(226,230,232,.42)');v.addColorStop(1,'rgba(232,236,238,.82)');g.fillStyle=v;g.fillRect(0,0,W,H);FOGV={key,c};return c;}
+function fogLayer(){const t=G.t||0,fs=fogSprite();ctx.save();ctx.drawImage(fogVeil(),0,0,W,H);
+  for(let i=0;i<11;i++){const sp=6+(i%4)*3,x=((i*197+t*sp)%(W+600))-300,y=((i*83)%H)+Math.sin(t*.2+i)*14,rx=220+(i%3)*90,ry=70+(i%4)*22;ctx.globalAlpha=.32+.12*Math.sin(t*.15+i*1.7);ctx.drawImage(fs,x-rx,y-ry,rx*2,ry*2);}
   ctx.restore();}
 function drawField(L){ctx.drawImage(getBG(L),0,0,W,H);cloudShadows(L);try{ambient(L);}catch(e){}
   L.water.forEach(r=>{const yy=TOP+r*CH;ctx.save();ctx.beginPath();ctx.rect(L.deckK?LEFT+L.deckK*CW:0,yy+8,W,CH-16);ctx.clip();ctx.globalCompositeOperation='screen';
@@ -1589,8 +1589,8 @@ function banner(s,a){ctx.globalAlpha=a;const w=Math.min(W-180,s.length*17+120),x
 
 function drawPrep(){const L=G.L;drawField(L);if(L.name==='Didgori')didgoriFlags();eraDrawGround();for(let r=0;r<ROWS;r++)drawCannon(G.cannons[r],r);
   const list=L.foes,cols=Math.ceil(list.length/5);
-  list.forEach((k,i)=>{const col=Math.floor(i/5);let row=i%5;const F=FOE[k];if(F.water&&!L.water.includes(row))row=L.water[0];if(isLand(k)&&L.water.includes(row))row=[0,1,4][i%3];
-    const x=W-70-(cols-1-col)*84-(F.cav?18:0),wet=L.water.includes(row)&&!F.water,big=F.cav||k==='technical'||k==='camel'||k==='galley'||k==='catapult';
+  list.forEach((k,i)=>{const col=Math.floor(i/5);let row=i%5;const F=FOE[k];if(F.water&&!L.water.includes(row))row=L.water[0];if(!F.water&&L.water.includes(row)){const lr=[0,1,2,3,4].filter(q=>!L.water.includes(q));row=lr[i%lr.length];}
+    const x=W-70-(cols-1-col)*84-(F.cav?18:0),wet=false,big=F.cav||k==='technical'||k==='camel'||k==='galley'||k==='catapult';
     drawUnit(k,x-F.w/2+F.off,rowY(row)-(wet?10:0),G.t+i*.7,{flip:1,scale:big?.8:1});if(wet){ctx.save();ctx.translate(x-F.w/2+F.off,rowY(row));ctx.scale(-1,1);drawBoat(G.t+i,64);ctx.restore();}});
   grade();drawHUD();
   const sc=G.phase==='scout'?Math.min(1,G.pt/.5):1;ctx.globalAlpha=sc;frameBox(W-255,17,234,84,{b:7,corners:false});
@@ -1811,7 +1811,7 @@ function warFlag(x,y,w,h,t,ph,pole){const tex=geoFlagTorn(),N=18;
   ctx.restore();}
 /* Didgori: tattered Georgian standards planted behind the Georgian line */
 function didgoriFlags(){const t=G.t||0;/* planted along the castle wall, at the edge of the field */
-  [[14,.1,0],[16,1.75,2.2],[13,3.4,4.1]].forEach(([x,r,ph])=>warFlag(x,TOP+r*CH+6,118,74,t,ph,CH*1.25));}
+  [[LEFT-118,.1,0],[LEFT-112,1.75,2.2],[LEFT-120,3.4,4.1]].forEach(([x,r,ph])=>warFlag(x,TOP+r*CH+6,118,74,t,ph,CH*1.25));}
 
 /* ================= RALLY: glowing foes drop a leaf; feed it to a soldier for a devastating super move ================= */
 function leafShape(g,x,y,s,rot){g.save();g.translate(x,y);g.rotate(rot||0);g.scale(s,s);
@@ -2515,7 +2515,7 @@ const PERF={n:0,sum:0,cool:0};
 function perfTick(r){if(r<=0||r>0.5||GFX!=='auto')return;PERF.n++;PERF.sum+=r;PERF.cool-=r;if(PERF.sum<1.5||PERF.n<8)return;const avg=PERF.sum/PERF.n;PERF.n=0;PERF.sum=0;if(PERF.cool>0)return;
   if(avg>1/42&&QUAL>.5){QUAL=Math.max(.5,QUAL*.82);PERF.cool=1.4;resize();}else if(avg<1/57&&QUAL<1){QUAL=Math.min(1,QUAL*1.12);PERF.cool=4;resize();}}
 /* self-update: installed home-screen apps are often resumed, not restarted, so check for new versions ourselves */
-const BUILD='20261123-160437';
+const BUILD='20261123-160837';
 const UPD={ready:false,going:false,want:''};try{if(location.search.includes('v=')&&history.replaceState)history.replaceState(null,'','/play'+(location.search.includes('source=app')?'?source=app':''));}catch(e){}
 function checkUpdate(){if(BUILD==='dev')return;try{fetch('/version.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():null).then(v=>{if(v&&v.build&&v.build!==BUILD){let tried='';try{tried=sessionStorage.getItem('cq_upd')||'';}catch(e){}if(tried===v.build)return;UPD.want=v.build;UPD.ready=true;}}).catch(()=>{});}catch(e){}}
 function applyUpdate(){if(UPD.going)return;UPD.going=true;
